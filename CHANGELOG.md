@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.3](https://github.com/engeir/volcano-core/compare/v0.2.2...v0.2.3) (2024-01-17)
+
+
+### Bug Fixes
+
+* mise tasks are experimental and must be activated ([4ab703b](https://github.com/engeir/volcano-core/commit/4ab703bef07ce41fc37dcd0a6e856865cc4f1e0f))
+
 ## [0.2.2](https://github.com/engeir/volcano-core/compare/v0.2.1...v0.2.2) (2024-01-17)
 
 
