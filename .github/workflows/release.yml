@@ -13,7 +13,8 @@ jobs:
   release-please:
     runs-on: ubuntu-latest
     steps:
-      - uses: google-github-actions/release-please-action@v3
+      - name: Release please
+        uses: google-github-actions/release-please-action@v3
         id: release
         with:
           release-type: python
@@ -21,3 +22,23 @@ jobs:
           extra-files: |
             README.md
           changelog-types: '[{"type":"feat","section":"Features","hidden":false},{"type":"fix","section":"Bug Fixes","hidden":false},{"type":"chore","section":"Miscellaneous","hidden":false},{"type":"style","section":"Styles","hidden":false},{"type":"refactor","section":"Code Refactoring","hidden":false},{"type":"perf","section":"Performance","hidden":false},{"type":"test","section":"Tests","hidden":false},{"type":"ci","section":"Continuous Integration","hidden":false},{"type":"build","section":"Build System","hidden":false},{"type":"docs","section":"Documentation","hidden":false}]'
+      - name: Build
+        if: ${{ steps.release.outputs.release_created }}
+        run: |
+          curl https://mise.jdx.dev/install.sh | sh
+          echo "$HOME/.local/share/mise/bin" >> $GITHUB_PATH
+          echo "$HOME/.local/share/mise/shims" >> $GITHUB_PATH
+          mise b
+      - name: Publish package on TestPyPI
+        if: ${{ steps.release.outputs.release_created }}
+        uses: pypa/gh-action-pypi-publish@v1.8.11
+        with:
+          user: __token__
+          password: ${{ secrets.TEST_PYPI_TOKEN }}
+          repository_url: https://test.pypi.org/legacy/
+      # - name: Publish package on PyPI
+      #   if: ${{ steps.release.outputs.release_created }}
+      #   uses: pypa/gh-action-pypi-publish@v1.8.11
+      #   with:
+      #     user: __token__
+      #     password: ${{ secrets.PYPI_TOKEN }}

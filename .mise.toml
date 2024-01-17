@@ -1,2 +1,23 @@
 [tools]
 python = { version = "3.12", virtualenv = ".venv" }
+
+[tasks.build]
+description = "Build the project"
+run = "poetry build --ansi"
+alias = "b"
+depends = ["install"]
+
+[tasks.install]
+description = "Install poetry and dependencies"
+run = """
+#!/usr/bin/env bash
+curl -sSL https://install.python-poetry.org | python3 -
+poetry install
+"""
+
+# [tasks.publish]
+# env = { user = "__token__", password = "${{ secrets.PYPI_TOKEN }}" }
+# description = "Release the project to PyPI"
+# run = "poetry publish"
+# alias = "p"
+# depends = ["build"]
