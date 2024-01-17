@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.2](https://github.com/engeir/volcano-core/compare/v0.2.1...v0.2.2) (2024-01-17)
+
+
+### Bug Fixes
+
+* style in workflow ([5bc93eb](https://github.com/engeir/volcano-core/commit/5bc93ebf819cd50bdd6a61997080303e34906ea3))
+
 ## [0.2.1](https://github.com/engeir/volcano-core/compare/v0.2.0...v0.2.1) (2024-01-17)
 
 
