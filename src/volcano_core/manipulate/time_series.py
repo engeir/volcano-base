@@ -54,8 +54,6 @@ def shift_arrays(
         match case_0:
             case "ens1":
                 shift = 0
-                # if weighted_ends != 1.0:
-                #     arr.data = arr.data * weighted_ends
             case "ens2":
                 # From Feb 15 to May 15
                 shift = 89 if daily else 3
@@ -68,8 +66,6 @@ def shift_arrays(
             case "ens5":
                 # From Feb 15 to Feb 15
                 shift = 365 if daily else 12
-                # if weighted_ends != 1.0:
-                #     arr.data = arr.data * weighted_ends
             case _:
                 print("Don't know how to shift this array.")
                 shift = 0
