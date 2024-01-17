@@ -505,7 +505,6 @@ def weighted_season_avg(da: xr.DataArray) -> xr.DataArray:
     # Calculate the denominator
     ones_out = (ones * wgts).resample(time="QS").sum(dim="time")
     # Return the weighted average
-    # ds_weighted = (da * wgts).groupby("time.season").sum(dim="time")
     return obs_sum / ones_out
 
 
