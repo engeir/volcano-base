@@ -23,9 +23,7 @@ def get_so2_ob16_full_timeseries() -> tuple[np.ndarray, np.ndarray]:
         volcano_core.down.save_historical_so2(fn)
     ds = xr.open_dataset(fn)
     year = ds.time.data
-    avgs_list = volcano_core.manipulate.time_series.mean_flatten(
-        [ds.colmass], dims=["lat"]
-    )
+    avgs_list = volcano_core.manipulate.mean_flatten([ds.colmass], dims=["lat"])
     avgs = avgs_list[0].data
     # Scale so that the unit is now in Tg (Otto-Bliesner et al. (2016)).
     avgs = avgs / avgs.max() * 257.9
