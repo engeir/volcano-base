@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.4](https://github.com/engeir/volcano-core/compare/v0.2.3...v0.2.4) (2024-01-17)
+
+
+### Bug Fixes
+
+* mise must be activated ([084adcb](https://github.com/engeir/volcano-core/commit/084adcb9f4c5c14e21d53d6b24e46b51deb67c70))
+
 ## [0.2.3](https://github.com/engeir/volcano-core/compare/v0.2.2...v0.2.3) (2024-01-17)
 
 
