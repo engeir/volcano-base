@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.2.0](https://github.com/engeir/volcano-core/compare/v0.1.0...v0.2.0) (2024-01-17)
+
+
+### Bug Fixes
+
+* **imports:** incorrect module path ([c849137](https://github.com/engeir/volcano-core/commit/c8491373d070dd0d6fcf03c75df9466d9bbc449a))
+
+
+### Miscellaneous Chores
+
+* release 0.2.0 ([d1241e2](https://github.com/engeir/volcano-core/commit/d1241e246d0609bcbf2728e58d9c0778055b7023))
+* release 0.2.0 ([8c9f017](https://github.com/engeir/volcano-core/commit/8c9f0172cadb3ac4c61f218c821cb9128b9487c7))
+
 ## [0.1.1](https://github.com/engeir/volcano-core/compare/v0.1.0...v0.1.1) (2024-01-17)
 
 
