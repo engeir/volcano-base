@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/engeir/volcano-core/compare/v0.2.0...v0.2.1) (2024-01-17)
+
+
+### Bug Fixes
+
+* not a fix, just forcing release ([1870b4a](https://github.com/engeir/volcano-core/commit/1870b4a771e4024c7d30215141ba72674210f45a))
+
 ## [0.2.0](https://github.com/engeir/volcano-core/compare/v0.1.0...v0.2.0) (2024-01-17)
 
 
