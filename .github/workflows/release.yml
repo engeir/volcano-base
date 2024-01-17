@@ -18,6 +18,8 @@ jobs:
         id: release
         with:
           release-type: python
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
           token: ${{ secrets.RELEASE_TOKEN }}
           # package-name: volcano-core
           # extra-files: |
