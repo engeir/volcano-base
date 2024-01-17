@@ -27,7 +27,8 @@ jobs:
           curl https://mise.jdx.dev/install.sh | sh
           echo "$HOME/.local/share/mise/bin">> $GITHUB_PATH
           echo "$HOME/.local/share/mise/shims">> $GITHUB_PATH
-          mise b
+          mise settings set experimental true
+          mise run b
       - name: Publish package on TestPyPI
         if: ${{ steps.release.outputs.release_created }}
         uses: pypa/gh-action-pypi-publish@v1.8.11
