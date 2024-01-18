@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.3](https://github.com/engeir/volcano-base/compare/v0.3.2...v0.3.3) (2024-01-18)
+
+
+### Bug Fixes
+
+* **imports:** allow easier access from the load module ([c3d48ff](https://github.com/engeir/volcano-base/commit/c3d48ffce22dfab891c3548dd8f0c692e2d35f67))
+
 ## [0.3.2](https://github.com/engeir/volcano-base/compare/v0.3.1...v0.3.2) (2024-01-18)
 
 
