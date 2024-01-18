@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.9](https://github.com/engeir/volcano-core/compare/v0.2.8...v0.2.9) (2024-01-18)
+
+
+### Bug Fixes
+
+* checkout repo... ([3ecf38d](https://github.com/engeir/volcano-core/commit/3ecf38d3b4df1b46b3b5a80fb019d10708be09b3))
+
 ## [0.2.8](https://github.com/engeir/volcano-core/compare/v0.2.7...v0.2.8) (2024-01-18)
 
 
