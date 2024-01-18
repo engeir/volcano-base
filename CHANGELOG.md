@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.12](https://github.com/engeir/volcano-core/compare/v0.2.11...v0.2.12) (2024-01-18)
+
+
+### Bug Fixes
+
+* move commands around ([38aac4c](https://github.com/engeir/volcano-core/commit/38aac4c54fe22127f685ac7e9a28ae207647fa72))
+
 ## [0.2.11](https://github.com/engeir/volcano-core/compare/v0.2.10...v0.2.11) (2024-01-18)
 
 
