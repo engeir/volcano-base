@@ -1,6 +1,7 @@
 """Configuration file for `volcano-base`."""
 
 import pathlib
+from typing import Literal
 
 import tomllib
 from returns.result import Failure, Result, Success
@@ -56,6 +57,7 @@ with _cfg.open(mode="rb") as cfg:
     SAVE_PATH = pathlib.Path(out["volcano-base"]["save_path"])
     # data_path = "/media/een023/LaCie/een023/cesm/model-runs"
 
+MEANS: dict[Literal["TREFHT"], float] = {"TREFHT": 287.37903283}
 DATA_ATTRS = {
     "AODVISstdn": ["Stratospheric aerosol optical depth 550 nm day night", "1"],
     "FSNTOA": ["Net solar flux at top of atmosphere", "W/m2"],

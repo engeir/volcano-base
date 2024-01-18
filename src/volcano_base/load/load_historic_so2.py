@@ -1,7 +1,8 @@
 """Load historic data from the CESM LME simulations."""
 
+import datetime
 import itertools
-from typing import Literal
+from typing import Literal, overload
 
 import numpy as np
 import xarray as xr
@@ -70,15 +71,35 @@ def _month2day(
     return newest
 
 
-def get_so2_ob16_peak_timeseries() -> tuple[np.ndarray, np.ndarray]:
+@overload
+def get_so2_ob16_peak_timeseries(
+    xarray: Literal[False],
+) -> tuple[np.ndarray, np.ndarray]:
+    ...
+
+
+@overload
+def get_so2_ob16_peak_timeseries(xarray: Literal[True]) -> xr.DataArray:
+    ...
+
+
+def get_so2_ob16_peak_timeseries(
+    xarray: bool = False,
+) -> tuple[np.ndarray, np.ndarray] | xr.DataArray:
     """Load in mean stratospheric volcanic sulfate aerosol injections.
 
     The time series are daily resolved, with SO2 injections represented as single day
     peaks.
 
+    Parameters
+    ----------
+    xarray : bool, optional
+        Whether to return the data as an xarray DataArray or to use the default of two
+        numpy arrays. Default is False
+
     Returns
     -------
-    tuple[np.ndarray, np.ndarray]
+    tuple[np.ndarray, np.ndarray] | xr.DataArray
         The stratospheric sulfate injections used as forcing in the CESM LME
         simulations. Arrival times are in the first array, SO2 values in the second.
 
@@ -95,4 +116,14 @@ def get_so2_ob16_peak_timeseries() -> tuple[np.ndarray, np.ndarray]:
     g, y = _gao_remove_decay_in_forcing(g, y)
     # plt.plot(y, g)
     # plt.show()
+    if xarray:
+        freq = "D"
+        da = xr.DataArray(
+            g,
+            dims=["time"],
+            coords={"time": volcano_base.manipulate.float2dt(y, freq)},
+            name="Mean stratospheric volcanic sulfate aerosol injections [Tg]",
+        )
+        da = da.assign_coords(time=da.time.data + datetime.timedelta(days=14))
+        return da
     return y, g

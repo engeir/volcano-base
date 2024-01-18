@@ -5,5 +5,11 @@ from volcano_base.load.load_historic_so2 import (
     get_so2_ob16_full_timeseries,
     get_so2_ob16_peak_timeseries,
 )
+from volcano_base.load.load_ob16 import get_ob16_outputs
 
-__all__ = ["get_so2_ob16_full_timeseries", "get_so2_ob16_peak_timeseries", "FindFiles"]
+__all__ = [
+    "FindFiles",
+    "get_ob16_outputs",
+    "get_so2_ob16_full_timeseries",
+    "get_so2_ob16_peak_timeseries",
+]
