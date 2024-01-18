@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/engeir/volcano-base/compare/v0.3.3...v0.4.0) (2024-01-18)
+
+
+### Features
+
+* **load:** implement strategy to load OB16 output data ([1765da9](https://github.com/engeir/volcano-base/commit/1765da915100c8894ab8dfe06ca08fa1be4f1aba))
+
 ## [0.3.3](https://github.com/engeir/volcano-base/compare/v0.3.2...v0.3.3) (2024-01-18)
 
 
