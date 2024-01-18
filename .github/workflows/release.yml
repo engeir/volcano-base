@@ -21,7 +21,7 @@ jobs:
           release-type: python
           config-file: ".release-please-config.json"
           manifest-file: ".release-please-manifest.json"
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         if: ${{ steps.release.outputs.release_created }}
       - name: Install and build
         if: ${{ steps.release.outputs.release_created }}
