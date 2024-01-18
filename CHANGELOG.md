@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.3.0](https://github.com/engeir/volcano-base/compare/v0.2.12...v0.3.0) (2024-01-18)
+
+
+### Features
+
+* publish package to pypi ([205df5e](https://github.com/engeir/volcano-base/commit/205df5ebc3404f1d4e7c26386abe473e82f2b3e1))
+
+
+### Bug Fixes
+
+* rename project to publish to PyPI ([ac9cb16](https://github.com/engeir/volcano-base/commit/ac9cb16049bd6a6b85cd5955b15b604b26e06ae2))
+
 ## [0.2.12](https://github.com/engeir/volcano-core/compare/v0.2.11...v0.2.12) (2024-01-18)
 
 
