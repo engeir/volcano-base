@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "volcano-core"
-version = "0.2.7"
+version = "0.2.8"
 description = "Download, find and manipulate volcano and climate related time series"
 authors = ["engeir <engeir@pm.me>"]
 license = "MIT"
