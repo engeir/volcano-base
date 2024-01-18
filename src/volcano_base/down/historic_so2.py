@@ -6,7 +6,7 @@ import sys
 import requests
 import rich.progress
 
-import volcano_core
+import volcano_base
 
 
 def save_historical_so2(file: pathlib.Path) -> None:
@@ -24,7 +24,7 @@ def save_historical_so2(file: pathlib.Path) -> None:
     # Input file with injected SO2.
     _download_so2_file(file)
     print(
-        f"You might want to clean up the .nc files in {volcano_core.config.PROJECT_ROOT}."
+        f"You might want to clean up the .nc files in {volcano_base.config.PROJECT_ROOT}."
     )
 
 

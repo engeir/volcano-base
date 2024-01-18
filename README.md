@@ -17,7 +17,7 @@ This project is published to [pypi](https://pypi.org). Install with you preferre
 package manager, for example using `pip`:
 
 ```bash
-pip install volcano-core
+pip install volcano-base
 ```
 
 ## Usage

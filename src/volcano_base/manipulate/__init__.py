@@ -1,6 +1,6 @@
 """Initialise the manipulate module."""
 
-from volcano_core.manipulate.time_series import (
+from volcano_base.manipulate.time_series import (
     dt2float,
     float2dt,
     get_median,

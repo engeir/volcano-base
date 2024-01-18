@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "volcano-core"
+name = "volcano-base"
 version = "0.2.12"
 description = "Download, find and manipulate volcano and climate related time series"
 authors = ["engeir <engeir@pm.me>"]
@@ -144,7 +144,7 @@ xarray = "xr"
 
 [tool.ruff.isort]
 case-sensitive = true
-known-local-folder = ["src", "volcano_core"]
+known-local-folder = ["src", "volcano_base"]
 
 [tool.isort]
 multi_line_output = 3

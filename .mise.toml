@@ -15,9 +15,11 @@ curl -sSL https://install.python-poetry.org | python3 -
 poetry install
 """
 
-# [tasks.publish]
-# env = { user = "__token__", password = "${{ secrets.PYPI_TOKEN }}" }
-# description = "Release the project to PyPI"
-# run = "poetry publish"
-# alias = "p"
-# depends = ["build"]
+[tasks.publish]
+description = "Release the project to PyPI"
+run = """
+#!/bin/bash
+poetry publish -u __token__ -p "$(pass PyPI/main-token)" --build
+"""
+alias = "p"
+depends = ["build"]

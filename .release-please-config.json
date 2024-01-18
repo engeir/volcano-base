@@ -15,7 +15,7 @@
     "src/": {
       "release-type": "python",
       "extra-files": ["README.md"],
-      "package-name": "volcano-core"
+      "package-name": "volcano-base"
     }
   }
 }

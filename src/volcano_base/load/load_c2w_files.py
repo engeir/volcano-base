@@ -11,7 +11,7 @@ import xarray as xr
 from returns.result import Failure, Result, Success
 from xarray.core.types import T_Xarray
 
-import volcano_core
+import volcano_base
 
 
 class FindFiles:
@@ -143,7 +143,7 @@ class FindFiles:
             # Match exactly 8 digits
             (\d{8})"""
         pattern = re.compile(regex + self.ft, re.X)
-        self.root_path = pathlib.Path(volcano_core.config.DATA_PATH)
+        self.root_path = pathlib.Path(volcano_base.config.DATA_PATH)
         if not self.root_path.exists():
             raise ConnectionError(
                 "The file path could not be found. Are you sure the harddisk is"
@@ -594,8 +594,8 @@ class FindFiles:
         with np.load(fp) as f:
             xarr = xr.DataArray(f["data"], dims=["time"], coords={"time": f["times"]})
             file_set = {
-                "long_name": volcano_core.config.DATA_ATTRS[file[3]][0],
-                "units": volcano_core.config.DATA_ATTRS[file[3]][1],
+                "long_name": volcano_base.config.DATA_ATTRS[file[3]][0],
+                "units": volcano_base.config.DATA_ATTRS[file[3]][1],
                 "file_id": file,
             }
             xarr = xarr.assign_attrs(file_set)
