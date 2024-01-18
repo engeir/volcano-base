@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/engeir/volcano-core/compare/v0.2.12...v0.3.0) (2024-01-18)
+
+
+### Features
+
+* publish package to pypi ([205df5e](https://github.com/engeir/volcano-core/commit/205df5ebc3404f1d4e7c26386abe473e82f2b3e1))
+
 ## [0.2.12](https://github.com/engeir/volcano-core/compare/v0.2.11...v0.2.12) (2024-01-18)
 
 
