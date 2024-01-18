@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.10](https://github.com/engeir/volcano-core/compare/v0.2.9...v0.2.10) (2024-01-18)
+
+
+### Bug Fixes
+
+* keep only essential commands ([455fcf9](https://github.com/engeir/volcano-core/commit/455fcf997658e715a11874733721161f4d700139))
+
 ## [0.2.9](https://github.com/engeir/volcano-core/compare/v0.2.8...v0.2.9) (2024-01-18)
 
 
