@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.2](https://github.com/engeir/volcano-base/compare/v0.3.1...v0.3.2) (2024-01-18)
+
+
+### Bug Fixes
+
+* forgot name change in config.py ([aa3c894](https://github.com/engeir/volcano-base/commit/aa3c8945cade1704bd55c8222ba027fe9c432a10))
+
 ## [0.3.1](https://github.com/engeir/volcano-base/compare/v0.3.0...v0.3.1) (2024-01-18)
 
 
