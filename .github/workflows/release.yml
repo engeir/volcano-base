@@ -27,7 +27,8 @@ jobs:
           curl https://mise.jdx.dev/install.sh | sh
           echo "$HOME/.local/share/mise/bin">> $GITHUB_PATH
           echo "$HOME/.local/share/mise/shims">> $GITHUB_PATH
-          mise activate bash
+          eval "$(mise activate bash)"
+          ls
           mise install
           mise settings set experimental true
           mise run build
