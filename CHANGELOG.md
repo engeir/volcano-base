@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.6](https://github.com/engeir/volcano-core/compare/v0.2.5...v0.2.6) (2024-01-18)
+
+
+### Bug Fixes
+
+* evaluate mise activate command ([520cb83](https://github.com/engeir/volcano-core/commit/520cb8349e4a590350922a8daa287c2b7e79a0a0))
+
 ## [0.2.5](https://github.com/engeir/volcano-core/compare/v0.2.4...v0.2.5) (2024-01-17)
 
 
