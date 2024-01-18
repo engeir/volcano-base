@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.11](https://github.com/engeir/volcano-core/compare/v0.2.10...v0.2.11) (2024-01-18)
+
+
+### Bug Fixes
+
+* need mise activate bash evaluated ([2b64909](https://github.com/engeir/volcano-core/commit/2b64909f23e52e672ae325463412185b73dd8ba3))
+
 ## [0.2.10](https://github.com/engeir/volcano-core/compare/v0.2.9...v0.2.10) (2024-01-18)
 
 
