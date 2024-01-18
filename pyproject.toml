@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "volcano-base"
-version = "0.3.3"
+version = "0.4.0"
 description = "Download, find and manipulate volcano and climate related time series"
 authors = ["engeir <engeir@pm.me>"]
 license = "MIT"
