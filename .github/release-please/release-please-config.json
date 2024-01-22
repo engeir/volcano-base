@@ -12,7 +12,7 @@
     { "type": "docs", "section": "Documentation", "hidden": false }
   ],
   "packages": {
-    "src/": {
+    ".": {
       "release-type": "python",
       "extra-files": ["README.md"],
       "package-name": "volcano-base"
