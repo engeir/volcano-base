@@ -12,6 +12,14 @@ import volcano_base
 def save_historical_so2(file: pathlib.Path) -> None:
     """Save the historic SO2 injections data to .npz files.
 
+    This function is used by functions inside the `volcano_base.load` module, and should
+    not be needed to be called by the user.
+
+    Parameters
+    ----------
+    file : pathlib.Path
+        Path to the file to download.
+
     Notes
     -----
     Used by Otto-Bliesner et al. (2016).
