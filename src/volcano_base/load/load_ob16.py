@@ -2,6 +2,7 @@
 
 import datetime
 import re
+from typing import Literal, overload
 
 import numpy as np
 import scipy
@@ -16,7 +17,7 @@ def _get_ob16_rf_temp_arrays() -> tuple[list[xr.DataArray], list[xr.DataArray]]:
     Returns
     -------
     tuple[list[xr.DataArray], list[xr.DataArray]]
-        The AOD and RF arrays in two lists
+        The RF and temperature arrays in two lists
 
     Raises
     ------
@@ -94,6 +95,84 @@ def _remove_seasonality_ob16(arr: xr.DataArray, monthly: bool = False) -> xr.Dat
     )
 
 
+@overload
+def get_ob16_rf(ensemble: Literal[False] = False) -> xr.DataArray:
+    ...
+
+
+@overload
+def get_ob16_rf(ensemble: Literal[True]) -> list[xr.DataArray]:
+    ...
+
+
+def get_ob16_rf(ensemble: bool = False) -> xr.DataArray | list[xr.DataArray]:
+    """Return Otto-Bliesner et al. 2016 radiative forcing.
+
+    Parameters
+    ----------
+    ensemble : bool, optional
+        Whether to return the full ensemble or just the median, by default False
+
+    Returns
+    -------
+    xr.DataArray | list[xr.DataArray]
+        The radiative forcing time series
+    """
+    rf, _ = _get_ob16_rf_temp_arrays()
+    if ensemble:
+        return rf
+    # Add RF from the FSNTOA variable (daily) ---------------------------------------- #
+    # We load in the original FSNTOA 5 member ensemble and compute the ensemble mean.
+    rf_fr = volcano_base.manipulate.get_median(rf, xarray=True)
+    # Remove noise in Fourier domain (seasonal and 6-month cycles)
+    rf_fr = volcano_base.manipulate.remove_seasonality([rf_fr.copy()])[0]
+    rf_fr = volcano_base.manipulate.remove_seasonality([rf_fr], freq=2)[0]
+    # Subtract the mean
+    rf_fr.data -= rf_fr.data.mean()
+    return rf_fr
+
+
+@overload
+def get_ob16_temperature(ensemble: Literal[False] = False) -> xr.DataArray:
+    ...
+
+
+@overload
+def get_ob16_temperature(ensemble: Literal[True]) -> list[xr.DataArray]:
+    ...
+
+
+def get_ob16_temperature(ensemble: bool = False) -> xr.DataArray | list[xr.DataArray]:
+    """Return Otto-Bliesner et al. 2016 temperature.
+
+    Parameters
+    ----------
+    ensemble : bool, optional
+        Whether to return the full ensemble or just the median, by default False
+
+    Returns
+    -------
+    xr.DataArray | list[xr.DataArray]
+        The temperature time series
+    """
+    # Temperature
+    _, temp_ = _get_ob16_rf_temp_arrays()
+    if ensemble:
+        return temp_
+    temp_xr = volcano_base.manipulate.get_median(temp_, xarray=True)
+    # Seasonality is removed by use of a control run temperature time series, where we
+    # compute a climatology mean for each day of the year which is subtracted from the
+    # time series.
+    # temp_xr = temp_xr.assign_coords(time=volcano_base.manipulate.float2dt(temp_xr.time.data))
+    temp_xr = _remove_seasonality_ob16(temp_xr)
+    # Adjust the temperature so its mean is at zero. We also remove a slight drift by
+    # means of a linear regression fit.
+    x_ax = volcano_base.manipulate.dt2float(temp_xr.time.data)
+    temp_lin_reg = scipy.stats.linregress(x_ax, temp_xr.data)
+    temp_xr.data -= x_ax * temp_lin_reg.slope + temp_lin_reg.intercept
+    return temp_xr
+
+
 def get_ob16_outputs() -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Return Otto-Bliesner et al. 2016 SO2, RF and temperature peaks.
 
@@ -104,29 +183,10 @@ def get_ob16_outputs() -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     tuple[np.ndarray, np.ndarray, np.ndarray]
         SO2 peaks, RF peaks and temperature peaks
     """
-    # Temperature
-    ds, temp_ = _get_ob16_rf_temp_arrays()
-    temp_xr = volcano_base.manipulate.get_median(temp_, xarray=True)
-    # Seasonality is removed by use of a control run temperature time series, where we
-    # compute a climatology mean for each day of the year which is subtracted from the
-    # time series.
-    # temp_xr = temp_xr.assign_coords(time=volcano_base.manipulate.float2dt(temp_xr.time.data))
-    temp_xr = _remove_seasonality_ob16(temp_xr)
-    # Adjust the temperature so its mean is at zero, and fluctuations are positive. We
-    # also remove a slight drift by means of a linear regression fit.
-    temp_xr *= -1
-    x_ax = volcano_base.manipulate.dt2float(temp_xr.time.data)
-    temp_lin_reg = scipy.stats.linregress(x_ax, temp_xr.data)
-    temp_xr.data -= x_ax * temp_lin_reg.slope + temp_lin_reg.intercept
-
-    # Add RF from the FSNTOA variable (daily) ---------------------------------------- #
-    # We load in the original FSNTOA 5 member ensemble and compute the ensemble mean.
-    rf = volcano_base.manipulate.get_median(ds, xarray=True)
-    # Remove noise in Fourier domain (seasonal and 6-month cycles)
-    rf_fr = volcano_base.manipulate.remove_seasonality([rf.copy()])[0]
-    rf_fr = volcano_base.manipulate.remove_seasonality([rf_fr], freq=2)[0]
-    # Subtract the mean and flip
-    rf_fr.data -= rf_fr.data.mean()
+    # Set fluctuations to be positive
+    temp_xr = get_ob16_temperature()
+    temp_xr.data *= -1
+    rf_fr = get_ob16_rf()
     rf_fr.data *= -1
 
     # Scale forcing from SO4 to SO2
@@ -169,3 +229,7 @@ def get_ob16_outputs() -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     temp_v = temp.data[_idx_temp].flatten()
     _ids = so2.argsort()
     return so2[_ids], rf_v[_ids], temp_v[_ids]
+
+
+if __name__ == "__main__":
+    _get_ob16_rf_temp_arrays()
