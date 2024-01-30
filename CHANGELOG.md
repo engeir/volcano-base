@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.5.0](https://github.com/engeir/volcano-base/compare/v0.4.0...v0.5.0) (2024-01-30)
+
+
+### Features
+
+* **load:** load full ensemble and mean RF and T arrays from OB16 ([3b68bfb](https://github.com/engeir/volcano-base/commit/3b68bfb3e0da4c89170cac80e64b910a770f3d6d))
+
+
+### Documentation
+
+* **down:** add note in docstring about usage ([90ea57e](https://github.com/engeir/volcano-base/commit/90ea57ea8c726a083c2fd733b378a7d0e8d6555b))
+
 ## [0.4.0](https://github.com/engeir/volcano-base/compare/v0.3.3...v0.4.0) (2024-01-18)
 
 
