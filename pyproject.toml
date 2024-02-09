@@ -20,7 +20,7 @@ rich = "^13.7.0"
 [tool.poetry.group.dev.dependencies]
 pytest = ">=7.4.4,<9.0.0"
 pydocstringformatter = "^0.7.3"
-pydoclint = "^0.3.8"
+pydoclint = ">=0.3.8,<0.5.0"
 xdoctest = "^1.1.2"
 pyupgrade = "^3.15.0"
 pre-commit = "^3.6.0"
