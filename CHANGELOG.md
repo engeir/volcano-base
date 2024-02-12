@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.1](https://github.com/engeir/volcano-base/compare/v0.6.0...v0.6.1) (2024-02-12)
+
+
+### Bug Fixes
+
+* **manipulate:** add func to module init ([b7e7a01](https://github.com/engeir/volcano-base/commit/b7e7a016bcd1f49879b797cb54140f0fdbdfe8be))
+
 ## [0.6.0](https://github.com/engeir/volcano-base/compare/v0.5.0...v0.6.0) (2024-02-12)
 
 
