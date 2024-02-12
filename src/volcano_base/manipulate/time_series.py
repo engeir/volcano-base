@@ -436,6 +436,30 @@ def _keep_whole_years(arr: xr.DataArray, freq: str = "D") -> xr.DataArray:
     return arr
 
 
+def subtract_mean_of_tail(arrs: list, n_elements: int = 120) -> list:
+    """Subtract the mean of the tail of the arrays.
+
+    Parameters
+    ----------
+    arrs : list
+        List of arrays to subtract the mean from.
+    n_elements : int
+        Number of elements to subtract the mean from. Default is 120, one decade of
+        monthly data.
+
+    Returns
+    -------
+    list
+        List of arrays with the mean subtracted.
+    """
+    # Subtract the mean of the last decade
+    for i, arr in enumerate(arrs):
+        arr_ = arr[-n_elements:]
+        arr.data = arr.data - arr_.mean().data
+        arrs[i] = arr
+    return arrs
+
+
 def weighted_year_avg(da: xr.DataArray) -> xr.DataArray:
     """Calculate a temporal mean, weighted by days in each month.
 
