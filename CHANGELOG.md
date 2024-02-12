@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.6.0](https://github.com/engeir/volcano-base/compare/v0.5.0...v0.6.0) (2024-02-12)
+
+
+### Features
+
+* **manipulate:** add function to subtract based on time series tail ([02ff1f1](https://github.com/engeir/volcano-base/commit/02ff1f101f0037f025f22faa0b64a82c41695485))
+
+
+### Bug Fixes
+
+* **deps:** need h5netcdf and dask to load xarrays in FindFiles ([f1d6644](https://github.com/engeir/volcano-base/commit/f1d66445ba9c2fce04f68134808c0a2127d13779))
+
 ## [0.5.0](https://github.com/engeir/volcano-base/compare/v0.4.0...v0.5.0) (2024-01-30)
 
 
