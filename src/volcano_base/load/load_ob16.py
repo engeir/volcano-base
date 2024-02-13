@@ -173,10 +173,17 @@ def get_ob16_temperature(ensemble: bool = False) -> xr.DataArray | list[xr.DataA
     return temp_xr
 
 
-def get_ob16_outputs() -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+def get_ob16_outputs(
+    only_peaks: bool = True,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Return Otto-Bliesner et al. 2016 SO2, RF and temperature peaks.
 
     The peaks are best estimates from the full time series.
+
+    Parameters
+    ----------
+    only_peaks : bool, optional
+        Whether to return only the peaks or the full time series, by default True.
 
     Returns
     -------
@@ -221,6 +228,8 @@ def get_ob16_outputs() -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     _cesm_lme_so2_temp_peak = so2_temp_peak
     _cesm_lme_rf = rf_fr
     _cesm_lme_temp = temp
+    if not only_peaks:
+        return _cesm_lme_so2_start.data, rf_fr.data, temp.data
     # Mask out all non-zero forcing values, and the corresponding temperature values.
     _idx_rf = np.argwhere(so2_rf_peak.data > 0)
     _idx_temp = np.argwhere(so2_temp_peak.data > 0)
