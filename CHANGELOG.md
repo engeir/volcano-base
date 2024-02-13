@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.0](https://github.com/engeir/volcano-base/compare/v0.6.1...v0.7.0) (2024-02-13)
+
+
+### Features
+
+* **manipulate:** add array to list operation wrapper ([a4d7439](https://github.com/engeir/volcano-base/commit/a4d7439b8abf663e291c6055f6b10906c37ce529))
+
 ## [0.6.1](https://github.com/engeir/volcano-base/compare/v0.6.0...v0.6.1) (2024-02-12)
 
 
