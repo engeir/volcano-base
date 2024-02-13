@@ -1,6 +1,7 @@
 """Functions that modify (lists of) xarray DataArrays."""
 
 from collections import Counter
+from collections.abc import Callable
 from typing import Literal, overload
 
 import cftime
@@ -10,12 +11,46 @@ import scipy
 import xarray as xr
 
 
+def data_array_operation(
+    arrays: list[xr.DataArray], operation: Callable[[xr.DataArray], xr.DataArray]
+) -> list:
+    """Perform an operation on a list of xarray DataArrays.
+
+    Wrap what you want to do with a single array in a function
+
+    Parameters
+    ----------
+    arrays : list[xr.DataArray]
+        A list of xarray DataArrays to perform the operation on.
+    operation : Callable[[xr.DataArray], xr.DataArray]
+        A function that should be performed on the arrays.
+
+    Returns
+    -------
+    list
+        A list of modified xarray DataArrays.
+
+    Examples
+    --------
+    Implement the subtract_mean_of_tail function, first for a single array, then pass it
+    to data_array_operation.
+
+    >>> def single_array_sub_tail(arr: xr.DataArray) -> xr.DataArray:
+    ...     arr_ = arr[-120:]
+    ...     arr.data = arr.data - arr_.mean().data
+    ...     return arr
+    >>> data_array_operation([xr.DataArray([1, 2, 3]), xr.DataArray([4, 5, 6])], single_array_sub_tail)
+    """
+    for i, arr in enumerate(arrays):
+        arrays[i] = operation(arr)
+    return arrays
+
+
 def shift_arrays(
     arrays: list[xr.DataArray],
-    weighted_ends: float = 1.0,
     ens: str | None = None,
     daily: bool = True,
-    custom: int | None = None,
+    custom: list | int | None = None,
 ) -> list[xr.DataArray]:
     """Shift arrays to make the eruption occur on Feb. 15, 1850.
 
@@ -23,18 +58,16 @@ def shift_arrays(
     ----------
     arrays : list[xr.DataArray]
         A list of xarray DataArrays to shift.
-    weighted_ends : float
-        Place a weighting on the first and fifth arrays, since they both contribute to
-        the same seasonal cycle.
     ens : str | None
         Choose to shift any list of arrays according to the given ens value. Possible
         values are 'ens1', 'ens2', 'ens3', 'ens4' and 'ens5'.
     daily : bool
         If the data has monthly resolution instead of daily, set this to False
-    custom : int | None
+    custom : list | int | None
         Choose a custom shift in days that will be applied to all arrays in the list. A
         positive number of 365 will for example shift all dates one year back: 1851 ->
-        1850.
+        1850. If a list is given, it must have the same length as the input list of
+        arrays. Default is None.
 
     Returns
     -------
@@ -47,8 +80,18 @@ def shift_arrays(
         If the weighting on the first and fifth elements is not between 0 and 1.
     """
     array = arrays[:]
-    if weighted_ends < 0 or weighted_ends > 1:
-        raise ValueError("weighted_ends must be between 0 and 1")
+    match custom:
+        case None:
+            pass
+        case int():
+            custom_ = [custom] * len(array)
+        case list():
+            if len(custom) != len(array):
+                raise ValueError(
+                    "The custom shift list must have the same length as the input"
+                    " list of arrays."
+                )
+            custom_ = custom
     for i, arr in enumerate(array):
         case_0 = arr.attrs["ensemble"] if ens is None else ens
         match case_0:
@@ -69,7 +112,7 @@ def shift_arrays(
             case _:
                 print("Don't know how to shift this array.")
                 shift = 0
-        shift = shift if custom is None else custom
+        shift = shift if custom is None else custom_[i]
         if isinstance(arr.time.data[0], float):
             array[i] = arr.shift(time=-shift).dropna("time")
         else:

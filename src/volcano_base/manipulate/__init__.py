@@ -1,6 +1,7 @@
 """Initialise the manipulate module."""
 
 from volcano_base.manipulate.time_series import (
+    data_array_operation,
     dt2float,
     float2dt,
     get_median,
@@ -15,6 +16,7 @@ from volcano_base.manipulate.time_series import (
 )
 
 __all__ = [
+    "data_array_operation",
     "dt2float",
     "float2dt",
     "get_median",
