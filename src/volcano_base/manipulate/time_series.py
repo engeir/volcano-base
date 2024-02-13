@@ -406,7 +406,7 @@ def get_median(
     them before obtaining the median from this function.
     """
     array = arrays[:]
-    x_ax = array[0].time.data
+    x_ax = array[0].time
     y_ax = np.zeros((len(array), len(array[0].data)))
     for i, arr in enumerate(array):
         y_ax[i, :] = arr[:].data
