@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.1](https://github.com/engeir/volcano-base/compare/v0.7.0...v0.7.1) (2024-02-13)
+
+
+### Bug Fixes
+
+* **get_median:** keep xarray attributes after operation ([f6d998e](https://github.com/engeir/volcano-base/commit/f6d998e2bc101edd710a91a37e3827e04f56be62))
+
 ## [0.7.0](https://github.com/engeir/volcano-base/compare/v0.6.1...v0.7.0) (2024-02-13)
 
 
