@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.6](https://github.com/engeir/volcano-base/compare/v0.8.5...v0.8.6) (2024-02-16)
+
+
+### Bug Fixes
+
+* **ci:** use rye directly, via mise did not work ([082989c](https://github.com/engeir/volcano-base/commit/082989c95f85994638dd251a8a923582ea66bd94))
+
 ## [0.8.5](https://github.com/engeir/volcano-base/compare/v0.8.4...v0.8.5) (2024-02-16)
 
 
