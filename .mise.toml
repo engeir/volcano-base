@@ -3,7 +3,11 @@ python = { version = "3.12", virtualenv = ".venv" }
 
 [tasks.build]
 description = "Build the project"
-run = "rye build"
+run = """
+#!/usr/bin/env bash
+source "$HOME/.rye/env"
+rye build
+"""
 alias = "b"
 depends = ["install"]
 
