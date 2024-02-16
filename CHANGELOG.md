@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.1](https://github.com/engeir/volcano-base/compare/v0.8.0...v0.8.1) (2024-02-16)
+
+
+### Bug Fixes
+
+* **ci:** install rye without prompting ([668a7c1](https://github.com/engeir/volcano-base/commit/668a7c1ecdd072e664a08e504fb829dfa0b3d081))
+
 ## [0.8.0](https://github.com/engeir/volcano-base/compare/v0.7.1...v0.8.0) (2024-02-16)
 
 
