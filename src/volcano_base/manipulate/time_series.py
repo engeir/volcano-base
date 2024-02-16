@@ -1,5 +1,6 @@
 """Functions that modify (lists of) xarray DataArrays."""
 
+import datetime
 from collections import Counter
 from collections.abc import Callable
 from typing import Literal, overload
@@ -607,3 +608,24 @@ def normalize_peaks(*args: tuple[list | np.ndarray, str]) -> tuple[list, ...]:
             arrs.append(scaled_array)
         out.append(arrs)
     return tuple(out)
+
+
+def sampling_rate(dates: np.ndarray) -> float:
+    """Find the sampling rate."""
+    match dates[0]:
+        case float():
+            return np.mean(np.diff(dates))
+        case datetime.datetime():
+            return np.mean(
+                np.diff(
+                    [
+                        eval(datetime.datetime.strftime(i, "%Y+%-m/12+%-d/365"))
+                        for i in dates
+                    ]
+                )
+            )
+        case cftime._cftime.DatetimeNoLeap():
+            cftime2float_ = dt2float(dates)
+            return np.mean(np.diff(cftime2float_))
+        case _:
+            raise TypeError("The input dates must be floats or datetime arrays.")
