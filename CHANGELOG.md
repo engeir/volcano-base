@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.4](https://github.com/engeir/volcano-base/compare/v0.8.3...v0.8.4) (2024-02-16)
+
+
+### Bug Fixes
+
+* **ci:** make rye command available for build step ([b9e0753](https://github.com/engeir/volcano-base/commit/b9e0753b5167e27c31459212d90e8835de8f3359))
+
 ## [0.8.3](https://github.com/engeir/volcano-base/compare/v0.8.2...v0.8.3) (2024-02-16)
 
 
