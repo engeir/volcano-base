@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.5](https://github.com/engeir/volcano-base/compare/v0.8.4...v0.8.5) (2024-02-16)
+
+
+### Bug Fixes
+
+* **manipulate:** add sample_rate function as entry point in module ([d4e9995](https://github.com/engeir/volcano-base/commit/d4e99957d109db22b8a228105dfc31e185a16802))
+
 ## [0.8.4](https://github.com/engeir/volcano-base/compare/v0.8.3...v0.8.4) (2024-02-16)
 
 
