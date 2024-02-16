@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.3](https://github.com/engeir/volcano-base/compare/v0.8.2...v0.8.3) (2024-02-16)
+
+
+### Bug Fixes
+
+* **ci:** make sure rye manages virtualenv ([3ad9cb3](https://github.com/engeir/volcano-base/commit/3ad9cb34c0e8e05c7f7cc002f4ed307a91d1ad5f))
+
 ## [0.8.2](https://github.com/engeir/volcano-base/compare/v0.8.1...v0.8.2) (2024-02-16)
 
 
