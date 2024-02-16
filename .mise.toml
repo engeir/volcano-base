@@ -13,7 +13,7 @@ run = """
 #!/usr/bin/env bash
 curl -sSf https://rye-up.com/get | RYE_INSTALL_OPTION="--yes" bash
 source "$HOME/.rye/env"
-rye sync
+rye sync -f
 """
 
 [tasks.publish]
