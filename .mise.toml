@@ -3,23 +3,23 @@ python = { version = "3.12", virtualenv = ".venv" }
 
 [tasks.build]
 description = "Build the project"
-run = "poetry build --ansi"
+run = "rye build"
 alias = "b"
 depends = ["install"]
 
 [tasks.install]
-description = "Install poetry and dependencies"
+description = "Install rye and dependencies"
 run = """
 #!/usr/bin/env bash
-curl -sSL https://install.python-poetry.org | python3 -
-poetry install
+curl -sSf https://rye-up.com/get | bash
+rye sync
 """
 
 [tasks.publish]
 description = "Release the project to PyPI"
 run = """
 #!/bin/bash
-poetry publish -u __token__ -p "$(pass PyPI/main-token)" --build
+rye publish --token "$(pass PyPI/main-token)"
 """
 alias = "p"
 depends = ["build"]
