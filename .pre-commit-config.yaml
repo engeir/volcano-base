@@ -19,35 +19,35 @@ repos:
         name: ruff_format
         stages: [commit]
         language: system
-        entry: poetry run ruff format --force-exclude src # tests
+        entry: rye run ruff format --force-exclude src # tests
         types: [python]
 
       - id: ruff
         name: ruff
         stages: [commit]
         language: system
-        entry: poetry run ruff --fix --force-exclude src # tests
+        entry: rye run ruff --fix --force-exclude src # tests
         types: [python]
 
       - id: xdoctest
         name: xdoctest
         stages: [commit]
         language: system
-        entry: poetry run xdoctest
+        entry: rye run xdoctest
         types: [python]
 
       - id: pydocstringformatter
         name: pydocstringformatter
         stages: [commit]
         language: system
-        entry: poetry run pydocstringformatter src tests
+        entry: rye run pydocstringformatter src tests
         types: [python]
 
       - id: mypy
         name: mypy
         stages: [commit]
         language: system
-        entry: poetry run mypy
+        entry: rye run mypy
         types: [python]
         require_serial: true
 
@@ -55,7 +55,7 @@ repos:
         name: pydoclint
         stages: [commit]
         language: system
-        entry: poetry run pydoclint # src tests
+        entry: rye run pydoclint # src tests
         types: [python]
         require_serial: true
 
@@ -63,6 +63,6 @@ repos:
       #   name: pytest
       #   stages: [commit]
       #   language: system
-      #   entry: poetry run pytest tests
+      #   entry: rye run pytest tests
       #   types: [python]
       #   pass_filenames: false
