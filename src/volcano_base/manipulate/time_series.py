@@ -17,7 +17,7 @@ def data_array_operation(
 ) -> list:
     """Perform an operation on a list of xarray DataArrays.
 
-    Wrap what you want to do with a single array in a function
+    Wrap what you want to do with a single array in a function.
 
     Parameters
     ----------

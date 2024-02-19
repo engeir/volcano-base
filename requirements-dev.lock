@@ -13,6 +13,7 @@ certifi==2024.2.2
 cfgv==3.4.0
     # via pre-commit
 cftime==1.6.3
+    # via nc-time-axis
     # via volcano-base
 charset-normalizer==3.3.2
     # via requests
@@ -58,12 +59,14 @@ locket==1.0.0
 markdown-it-py==3.0.0
     # via rich
 matplotlib==3.8.3
+    # via nc-time-axis
     # via volcano-base
 mdurl==0.1.2
     # via markdown-it-py
 mypy==1.8.0
 mypy-extensions==1.0.0
     # via mypy
+nc-time-axis==1.4.1
 nodeenv==1.8.0
     # via pre-commit
 numpy==1.26.4
@@ -71,6 +74,7 @@ numpy==1.26.4
     # via contourpy
     # via h5py
     # via matplotlib
+    # via nc-time-axis
     # via pandas
     # via scipy
     # via volcano-base
@@ -99,6 +103,11 @@ pygments==2.17.2
     # via rich
 pyparsing==3.1.1
     # via matplotlib
+pyqt5==5.15.10
+pyqt5-qt5==5.15.2
+    # via pyqt5
+pyqt5-sip==12.13.0
+    # via pyqt5
 pytest==8.0.0
 python-dateutil==2.8.2
     # via matplotlib

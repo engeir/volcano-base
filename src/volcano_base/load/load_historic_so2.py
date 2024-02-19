@@ -32,7 +32,9 @@ def get_so2_ob16_full_timeseries() -> tuple[np.ndarray, np.ndarray]:
 
 
 def _gao_remove_decay_in_forcing(
-    frc: np.ndarray, y: np.ndarray
+    frc: np.ndarray,
+    y: np.ndarray,
+    monthly: bool = False,
 ) -> tuple[np.ndarray, np.ndarray]:
     new_frc = np.zeros_like(frc)
     limit = 2e-6
@@ -45,10 +47,11 @@ def _gao_remove_decay_in_forcing(
             new_frc[i + place_here] = v
     # Go from monthly to daily (this is fine as long as we use a spiky forcing). We
     # start in December.
-    new_frc = _month2day(new_frc, start=12)
-    # The new time axis now goes down to one day
-    y = np.linspace(501, 2002, (2002 - 501) * 365 + 1)
-    y = y[: len(new_frc)]
+    if not monthly:
+        new_frc = _month2day(new_frc, start=12)
+        # The new time axis now goes down to one day
+        y = np.linspace(501, 2002, (2002 - 501) * 365 + 1)
+        y = y[: len(new_frc)]
     return new_frc, y
 
 
@@ -85,6 +88,7 @@ def get_so2_ob16_peak_timeseries(xarray: Literal[True]) -> xr.DataArray:
 
 def get_so2_ob16_peak_timeseries(
     xarray: bool = False,
+    freq: Literal["D", "MS"] = "D",
 ) -> tuple[np.ndarray, np.ndarray] | xr.DataArray:
     """Load in mean stratospheric volcanic sulfate aerosol injections.
 
@@ -96,6 +100,8 @@ def get_so2_ob16_peak_timeseries(
     xarray : bool, optional
         Whether to return the data as an xarray DataArray or to use the default of two
         numpy arrays. Default is False
+    freq : Literal["D", "MS"], optional
+        The frequency of the time series. Default is "D".
 
     Returns
     -------
@@ -113,11 +119,11 @@ def get_so2_ob16_peak_timeseries(
     # plt.figure()
     # plt.plot(y, g)
     y = y - y[0] + 501
-    g, y = _gao_remove_decay_in_forcing(g, y)
+    monthly = freq == "MS"
+    g, y = _gao_remove_decay_in_forcing(g, y, monthly)
     # plt.plot(y, g)
     # plt.show()
     if xarray:
-        freq = "D"
         da = xr.DataArray(
             g,
             dims=["time"],
