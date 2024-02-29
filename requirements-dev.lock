@@ -8,6 +8,8 @@
 #   with-sources: false
 
 -e file:.
+annotated-types==0.6.0
+    # via pydantic
 certifi==2024.2.2
     # via requests
 cfgv==3.4.0
@@ -97,6 +99,10 @@ pluggy==1.4.0
     # via pytest
 pre-commit==3.6.1
 pre-commit-hooks==4.5.0
+pydantic==2.6.2
+    # via volcano-base
+pydantic-core==2.16.3
+    # via pydantic
 pydoclint==0.4.0
 pydocstringformatter==0.7.3
 pygments==2.17.2
@@ -145,6 +151,8 @@ toolz==0.12.1
 types-requests==2.31.0.20240125
 typing-extensions==4.9.0
     # via mypy
+    # via pydantic
+    # via pydantic-core
     # via returns
 tzdata==2024.1
     # via pandas

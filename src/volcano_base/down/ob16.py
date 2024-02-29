@@ -26,6 +26,7 @@ def _look_for_files(file: pathlib.Path) -> Maybe[pathlib.Path]:
             print(
                 f"I went looking for files in {file.resolve().parent} but could not"
                 " find any. Download manually from"
+                " https://www.cesm.ucar.edu/community-projects/lme/data-sets"
                 " https://www.earthsystemgrid.org/dataset/ucar.cgd.cesm2le.atm.proc.daily_ave.html"
                 " (login needed)\nMissing files:"
             )
@@ -98,4 +99,5 @@ if __name__ == "__main__":
     # if not path.exists():
     #     path.mkdir(parents=False)
     # _save_output_files_to_npz(path)
-    save_to_npz()
+    # save_to_npz()
+    ...

@@ -1,6 +1,3 @@
-[tools]
-python = { version = "3.12", virtualenv = ".venv" }
-
 [tasks.build]
 description = "Build the project"
 run = """
