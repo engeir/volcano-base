@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.0.0](https://github.com/engeir/volcano-base/compare/v0.8.6...v1.0.0) (2024-03-01)
+
+
+### ⚠ BREAKING CHANGES
+
+* **ob16:** rewrite into a class ([#53](https://github.com/engeir/volcano-base/issues/53))
+
+### Code Refactoring
+
+* **ob16:** rewrite into a class ([#53](https://github.com/engeir/volcano-base/issues/53)) ([aac6001](https://github.com/engeir/volcano-base/commit/aac600170551712bb75fdc0eb917d3e580c4befe))
+
 ## [0.8.6](https://github.com/engeir/volcano-base/compare/v0.8.5...v0.8.6) (2024-02-16)
 
 
