@@ -311,6 +311,7 @@ def _remove_seasonality_fourier(
         )
     new_f_clean = scipy.fft.irfft(yf_clean)
     if plot:
+        plt.figure()
         plt.semilogy(xf, np.abs(yf))
         plt.semilogy(xf, np.abs(yf_clean))
         plt.xlim([-1, 10])

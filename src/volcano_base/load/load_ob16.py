@@ -1,14 +1,12 @@
 """Load the Otto-Bliesner et al. 2016 data into xarray objects."""
 
-# FIXME: need to fix the day/month issue, think the raw FSNTOA just need to be ironed
-# out and put in npz files. After that the class should be more or less done.
-
 import datetime
 import itertools
+import os
 import pathlib
 import re
-from collections import deque
-from typing import Literal, Never, NoReturn
+import warnings
+from typing import Literal
 
 import matplotlib.pyplot as plt
 import nc_time_axis  # noqa: F401
@@ -20,187 +18,144 @@ from pydantic import BaseModel, Field
 import volcano_base
 
 
-def _never_called(value: Never) -> NoReturn:
-    """Return nothing only when the input does not exist."""
-    # The function is useful when running mypy. If, in a series of if/elif or
-    # match/case, a variable is not fully handled, mypy will complain and say that the
-    # variable is of the wrong type when this function is called in the final `else`
-    # clause.
-    raise AssertionError("Code is unreachable.")
+class Ob16FileNotFound(FileNotFoundError):
+    """Raise an error if one of the Otto-Bliesner et al. (2016) files are not found."""
+
+    def __init__(self, *args: object) -> None:
+        self.message = "Cannot find the necessary Otto-Bliesner et al. 2016 files. Please run the `save_to_npz` function within `down.ob16` to see what files are missing."
+        super().__init__(self.message)
 
 
 class OttoBliesner(BaseModel):
-    """Object holding time series related to data from Otto-Bliesner et al. (2016)."""
+    """Object holding time series related to data from Otto-Bliesner et al. (2016).
+
+    Parameters
+    ----------
+    freq : Literal["h0", "h1"], optional
+        Frequency of data as set by the nhtfrq field
+        (https://www2.cesm.ucar.edu/models/cesm1.0/cesm/cesm_doc_1_0_4/x2602.html), by
+        default "h1".
+    """
 
     freq: Literal["h0", "h1"] = Field(
         default="h1",
-        frozen=True,
         description="Frequency of data as set by the nhtfrq field (https://www2.cesm.ucar.edu/models/cesm1.0/cesm/cesm_doc_1_0_4/x2602.html)",
     )
-    _temperature_ensemble: tuple[
-        xr.DataArray, xr.DataArray, xr.DataArray, xr.DataArray, xr.DataArray
-    ] | None = None
-    _rf_ensemble: tuple[
-        xr.DataArray, xr.DataArray, xr.DataArray, xr.DataArray, xr.DataArray
-    ] | None = None
-    _temperature_median: xr.DataArray | None = None
-    _rf_median: xr.DataArray | None = None
-    _temperature_peaks: np.ndarray | None = None
-    _rf_peaks: np.ndarray | None = None
-    _so2: xr.DataArray | None = None
-    _so2_delta: xr.DataArray | None = None
-    _aligned_arrays: dict[
-        Literal["so2-start", "so2-rf", "so2-temperature", "rf", "temperature"],
-        xr.DataArray,
-    ] | None = None
-    _so2_peaks: np.ndarray | None = None
 
     class Config:
         """Configuration for the OttoBliesner BaseModel object."""
 
         validate_assignment = True
+        frozen = True
+        extra = "forbid"
+        strict = True
 
     @property
     def temperature_ensemble(
         self,
     ) -> tuple[xr.DataArray, xr.DataArray, xr.DataArray, xr.DataArray, xr.DataArray]:
-        """Return the temperature ensemble."""
-        _calls = 0
-        while self._temperature_ensemble is None:
-            if _calls > 1:
-                raise ValueError("Could not set temperature ensemble.")
-            self.temperature_ensemble = self._set_rf_temp_ensembles("TREFHT")
-            _calls += 1
+        """Return the temperature ensemble.
+
+        Returns
+        -------
+        tuple[xr.DataArray, xr.DataArray, xr.DataArray, xr.DataArray, xr.DataArray]
+            The ensemble members.
+        """
+        if not hasattr(self, "_temperature_ensemble"):
+            self._temperature_ensemble = self._set_rf_temp_ensembles("TREFHT")
         return self._temperature_ensemble
 
-    @temperature_ensemble.setter
-    def temperature_ensemble(
-        self,
-        value: tuple[
-            xr.DataArray, xr.DataArray, xr.DataArray, xr.DataArray, xr.DataArray
-        ],
-    ) -> None:
-        """Set the temperature ensemble."""
-        self._temperature_ensemble = value
-
     @property
     def rf_ensemble(
         self,
     ) -> tuple[xr.DataArray, xr.DataArray, xr.DataArray, xr.DataArray, xr.DataArray]:
-        """Return the radiative forcing ensemble."""
-        _calls = 0
-        while self._rf_ensemble is None:
-            if _calls > 1:
-                raise ValueError("Could not set RF ensemble.")
-            self.rf_ensemble = self._set_rf_temp_ensembles("FSNTOA")
-            _calls += 1
-        return self._rf_ensemble
+        """Return the radiative forcing ensemble.
 
-    @rf_ensemble.setter
-    def rf_ensemble(
-        self,
-        value: tuple[
-            xr.DataArray, xr.DataArray, xr.DataArray, xr.DataArray, xr.DataArray
-        ],
-    ) -> None:
-        """Set the radiative forcing ensemble."""
-        self._rf_ensemble = value
+        Returns
+        -------
+        tuple[xr.DataArray, xr.DataArray, xr.DataArray, xr.DataArray, xr.DataArray]
+            The ensemble members.
+        """
+        if not hasattr(self, "_rf_ensemble"):
+            self._rf_ensemble = self._set_rf_temp_ensembles("FSNTOA")
+        return self._rf_ensemble
 
     @property
     def rf_median(self) -> xr.DataArray:
-        """Return the median of the radiative forcing time series."""
-        _calls = 0
-        while self._rf_median is None:
-            if _calls > 1:
-                raise ValueError("Could not set RF median.")
-            self._set_rf_median()
-            _calls += 1
-        return self._rf_median
+        """Return the median of the radiative forcing time series.
 
-    @rf_median.setter
-    def rf_median(self, value: xr.DataArray) -> None:
-        """Set the median of the radiative forcing time series."""
-        self._rf_median = value
+        Returns
+        -------
+        xr.DataArray
+            Median of the radiative forcing time series
+        """
+        self._set_rf_median()
+        return self._rf_median
 
     @property
     def temperature_median(self) -> xr.DataArray:
-        """Return the median of the temperature time series."""
-        _calls = 0
-        while self._temperature_median is None:
-            if _calls > 1:
-                raise ValueError("Could not set temperature median.")
-            self._set_temperature_median()
-            _calls += 1
-        return self._temperature_median
+        """Return the median of the temperature time series.
 
-    @temperature_median.setter
-    def temperature_median(self, value: xr.DataArray) -> None:
-        """Set the median of the temperature time series."""
-        self._temperature_median = value
+        Returns
+        -------
+        xr.DataArray
+            Median of the temperature time series
+        """
+        if not hasattr(self, "_temperature_median"):
+            self._set_temperature_median()
+        return self._temperature_median
 
     @property
     def temperature_peaks(self) -> np.ndarray:
-        """Return the temperature peaks."""
-        _calls = 0
-        while self._temperature_peaks is None:
-            if _calls > 1:
-                raise ValueError("Could not set temperature peaks.")
-            self._set_peak_arrays()
-            _calls += 1
-        return self._temperature_peaks
+        """Return the temperature peaks.
 
-    @temperature_peaks.setter
-    def temperature_peaks(self, value: np.ndarray) -> None:
-        """Set the temperature peaks."""
-        self._temperature_peaks = value
+        Returns
+        -------
+        np.ndarray
+            Array holding all found peak values
+        """
+        if not hasattr(self, "_temperature_peaks"):
+            self._set_peak_arrays()
+        return self._temperature_peaks
 
     @property
     def rf_peaks(self) -> np.ndarray:
-        """Return the radiative forcing peaks."""
-        _calls = 0
-        while self._rf_peaks is None:
-            if _calls > 1:
-                raise ValueError("Could not set RF peaks.")
-            self._set_peak_arrays()
-            _calls += 1
-        return self._rf_peaks
+        """Return the radiative forcing peaks.
 
-    @rf_peaks.setter
-    def rf_peaks(self, value: np.ndarray) -> None:
-        """Set the radiative forcing peaks."""
-        self._rf_peaks = value
+        Returns
+        -------
+        np.ndarray
+            Array holding all found peak values
+        """
+        if not hasattr(self, "_rf_peaks"):
+            self._set_peak_arrays()
+        return self._rf_peaks
 
     @property
     def so2(self) -> xr.DataArray:
-        """Return the SO2 time series."""
-        _calls = 0
-        while self._so2 is None:
-            if _calls > 1:
-                raise ValueError("Could not set SO2 time series.")
-            self._set_so2_full_timeseries()
-            _calls += 1
-        return self._so2
+        """Return the SO2 time series.
 
-    @so2.setter
-    def so2(self, value: xr.DataArray) -> None:
-        """Set the SO2 time series."""
-        self._so2 = value
+        Returns
+        -------
+        xr.DataArray
+            The original SO2 time series
+        """
+        if not hasattr(self, "_so2"):
+            self._set_so2_full_timeseries()
+        return self._so2
 
     @property
     def so2_delta(self) -> xr.DataArray:
-        """Return the SO2 delta time series."""
-        _calls = 0
-        while self._so2_delta is None:
-            if _calls > 1:
-                raise ValueError("Could not set SO2 delta time series.")
-            self._set_so2_peak_timeseries()
-            _calls += 1
-        return self._so2_delta
+        """Return the SO2 delta time series.
 
-    @so2_delta.setter
-    def so2_delta(self, value: xr.DataArray) -> None:
-        """Set the SO2 delta time series."""
-        self._so2_delta = value
+        Returns
+        -------
+        xr.DataArray
+            The SO2 time series with peaks only
+        """
+        if not hasattr(self, "_so2_delta"):
+            self._set_so2_peak_timeseries()
+        return self._so2_delta
 
     @property
     def aligned_arrays(
@@ -209,46 +164,33 @@ class OttoBliesner(BaseModel):
         Literal["so2-start", "so2-rf", "so2-temperature", "rf", "temperature"],
         xr.DataArray,
     ]:
-        """Return RF and temperature arrays with SO2 arrays aligned to their start and peak."""
-        _calls = 0
-        while self._aligned_arrays is None:
-            if _calls > 1:
-                raise ValueError("Could not set aligned arrays.")
-            self._set_aligned_arrays()
-            _calls += 1
-        return self._aligned_arrays
+        """Return the aligned SO2, RF and temperature arrays.
 
-    @aligned_arrays.setter
-    def aligned_arrays(
-        self,
-        value: dict[
-            Literal["so2-start", "so2-rf", "so2-temperature", "rf", "temperature"],
-            xr.DataArray,
-        ],
-    ) -> None:
-        """Set the aligned arrays."""
-        self._aligned_arrays = value
+        Returns
+        -------
+        dict[Literal['so2-start', 'so2-rf', 'so2-temperature', 'rf', 'temperature'], xr.DataArray]
+            The RF and temperature arrays along with SO2 arrays aligned with the
+            eruption start, RF peak and temperature peak.
+        """
+        if not hasattr(self, "_aligned_arrays"):
+            self._set_aligned_arrays()
+        return self._aligned_arrays
 
     @property
     def so2_peaks(self) -> np.ndarray:
-        """Return the SO2 peaks."""
-        _calls = 0
-        while self._so2_peaks is None:
-            if _calls > 1:
-                raise ValueError("Could not set SO2 peaks.")
-            self._set_peak_arrays()
-            _calls += 1
-        return self._so2_peaks
+        """Return the SO2 peaks.
 
-    @so2_peaks.setter
-    def so2_peaks(self, value: np.ndarray) -> None:
-        """Set the SO2 peaks."""
-        self._so2_peaks = value
+        Returns
+        -------
+        np.ndarray
+            Array holding all SO2 peak values
+        """
+        self._set_peak_arrays()
+        return self._so2_peaks
 
     def _set_so2_full_timeseries(self) -> None:
         """Load the npz file with volcanic injection."""
         file = "IVI2LoadingLatHeight501-2000_L18_c20100518.nc"
-        # file = "IVI2LoadingLatHeight501-2000_L18_c20121018_KT.nc"
         if not (fn := volcano_base.config.DATA_PATH / "cesm-lme" / file).exists():
             print(f"Cannot find {fn.resolve()}")
             volcano_base.down.save_historical_so2(fn)
@@ -262,7 +204,7 @@ class OttoBliesner(BaseModel):
         avgs = avgs.assign_coords(
             time=volcano_base.manipulate.float2dt(f_time, freq="MS")
         )
-        self.so2 = avgs
+        self._so2 = avgs
 
     def _set_so2_peak_timeseries(self) -> None:
         """Load in mean stratospheric volcanic sulfate aerosol injections.
@@ -285,7 +227,7 @@ class OttoBliesner(BaseModel):
             case "h1":
                 freq = "D"
             case _:
-                _never_called(self.freq)
+                volcano_base.never_called(self.freq)
         da = xr.DataArray(
             so2,
             dims=["time"],
@@ -293,7 +235,7 @@ class OttoBliesner(BaseModel):
             name="Mean stratospheric volcanic sulfate aerosol injections [Tg]",
         )
         da = da.assign_coords(time=da.time.data + datetime.timedelta(days=14))
-        self.so2_delta = da
+        self._so2_delta = da
 
     def _find_peaks_in_so2(
         self,
@@ -318,11 +260,16 @@ class OttoBliesner(BaseModel):
             case "h1":
                 new_frc = self._month2day(new_frc, start=12)
                 # The new time axis now goes down to one day
-                thetime_ = np.linspace(501, 2002, (2002 - 501) * 365 + 1)
-                thetime_ = thetime_[: len(new_frc)]
-                time_ = xr.CFTimeIndex(thetime_)
+                # thetime_ = np.linspace(501, 2002, (2002 - 501) * 365 + 1)
+                # thetime_ = thetime_[: len(new_frc)]
+                # time_ = xr.CFTimeIndex(thetime_)
+                time_ = xr.cftime_range(
+                    start="0501", end="2002", freq="D", calendar="noleap"
+                )[: len(new_frc)]
+                days_in_year = 365
+                time_ = time_.map(lambda x: x.toordinal() / days_in_year)
             case _:
-                _never_called(self.freq)
+                volcano_base.never_called(self.freq)
         return new_frc, time_
 
     @staticmethod
@@ -368,54 +315,59 @@ class OttoBliesner(BaseModel):
         # with the corresponding time-after-eruption.
         path = volcano_base.config.DATA_PATH / "cesm-lme"
         if not path.exists():
-            raise FileNotFoundError(
-                "Cannot find CESM-LME files. You may try to run the `save_to_npz` function"
-                f" within {__name__}."
-            )
+            raise Ob16FileNotFound()
         match self.freq:
             case "h1":
                 pattern = re.compile("/([A-Z]+)-00[1-5]\\.npz$", re.X)
             case "h0":
                 pattern = re.compile("/([A-Z]+)-monthly-00[1-5]\\.npz$", re.X)
             case _:
-                _never_called(self.freq)
+                volcano_base.never_called(self.freq)
         files_ = list(path.rglob("*00[1-5].npz"))
         return self._load_npz(files_, pattern, search_group)
 
     def _load_npz(
         self, files_: list[pathlib.Path], pattern: re.Pattern, search_group: str
     ) -> tuple[xr.DataArray, xr.DataArray, xr.DataArray, xr.DataArray, xr.DataArray]:
-        maxfiles = 5
-        arrs: deque[xr.DataArray] = deque([], maxlen=maxfiles)
+        arrs: list[xr.DataArray] = []
+        match self.freq:
+            case "h1":
+                freq = "D"
+                shift = 0
+            case "h0":
+                freq = "MS"
+                shift = 15
+            case _:
+                volcano_base.never_called(self.freq)
         for file in files_:
             if isinstance(search := pattern.search(str(file)), re.Match):
                 if search.groups()[0] == search_group:
-                    print(file.resolve())
-                    print(search.groups())
                     array = self._load_numpy(file.resolve())
                     s = "0850-01-01"
                     t = xr.cftime_range(
-                        start=s, periods=len(array.data), calendar="noleap", freq="D"
-                    )
+                        start=s, periods=len(array.data), calendar="noleap", freq=freq
+                    ) + datetime.timedelta(days=shift)
                     arrs.append(array.assign_coords({"time": t}))
+        maxfiles = 5
         if len(arrs) != maxfiles:
-            raise ValueError(
-                "The number of ensemble members is not 5. Please check the files."
-            )
+            raise Ob16FileNotFound()
         return arrs[0], arrs[1], arrs[2], arrs[3], arrs[4]
 
     def _load_nc(
         self, files_: list[pathlib.Path], pattern: re.Pattern, search_group: str
-    ) -> list[xr.DataArray]:
-        arrs = []
+    ) -> tuple[xr.DataArray, xr.DataArray, xr.DataArray, xr.DataArray, xr.DataArray]:
+        arrs: list[xr.DataArray] = []
         for file in files_:
             if isinstance(search := pattern.search(str(file)), re.Match):
-                print(search.groups())
-                print(file.resolve())
                 array = xr.open_dataset(file.resolve())
                 if search.groups()[0] == search_group:
                     arrs.append(array[search_group])
-        return arrs
+        maxfiles = 5
+        if len(arrs) != maxfiles:
+            raise ValueError(
+                f"The number of ensemble members is not 5, found {len(arrs)}. Please check the files."
+            )
+        return arrs[0], arrs[1], arrs[2], arrs[3], arrs[4]
 
     @staticmethod
     def _load_numpy(np_file) -> xr.DataArray:
@@ -441,23 +393,34 @@ class OttoBliesner(BaseModel):
 
     def _remove_temp_seasonality(self, arr: xr.DataArray) -> xr.DataArray:
         """Remove seasonality by subtracting CESM LME control run."""
+        match self.freq:
+            case "h0":
+                f1 = "MS"
+                specifier = "-monthly"
+                shift = 15
+            case "h1":
+                f1 = "D"
+                specifier = ""
+                shift = 0
+            case _:
+                volcano_base.never_called(self.freq)
         file_name = (
             volcano_base.config.DATA_PATH
             / "cesm-lme"
-            / "TREFHT850forcing-control-003.npz"
+            / f"TREFHT850forcing-control{specifier}-003.npz"
         )
         if file_name.exists():
             array = self._load_numpy(file_name.resolve())
             s = "0850-01-01"
             t = xr.cftime_range(
-                start=s, periods=len(array.data), calendar="noleap", freq="D"
-            )
+                start=s, periods=len(array.data), calendar="noleap", freq=f1
+            ) + datetime.timedelta(days=shift)
             raw_temp = array.assign_coords({"time": t})
         match self.freq:
             case "h0":
-                raw_temp = raw_temp.resample(time="MS").mean()
-                raw_temp, arr = xr.align(raw_temp, arr)
+                # month_mean = raw_temp.resample(time="MS").mean()
                 month_mean = raw_temp.groupby("time.month").mean("time")
+                raw_temp, arr = xr.align(raw_temp, arr)
                 return (
                     arr.groupby("time.month")
                     - month_mean
@@ -472,7 +435,7 @@ class OttoBliesner(BaseModel):
                     + volcano_base.config.MEANS["TREFHT"]
                 )
             case _:
-                _never_called(self.freq)
+                volcano_base.never_called(self.freq)
 
     def _set_rf_median(self) -> None:
         """Return Otto-Bliesner et al. 2016 radiative forcing."""
@@ -480,11 +443,18 @@ class OttoBliesner(BaseModel):
             list(self.rf_ensemble).copy(), xarray=True
         )
         # Remove noise in Fourier domain (seasonal and 6-month cycles)
-        rf = volcano_base.manipulate.remove_seasonality([rf.copy()])[0]
-        rf = volcano_base.manipulate.remove_seasonality([rf], freq=2)[0]
+        match self.freq:
+            case "h0":
+                f1 = 1.014
+            case "h1":
+                f1 = 1
+            case _:
+                volcano_base.never_called(self.freq)
+        rf = volcano_base.manipulate.remove_seasonality([rf.copy()], freq=f1)[0]
+        rf = volcano_base.manipulate.remove_seasonality([rf], freq=f1 * 2)[0]
         # Subtract the mean
         rf.data -= rf.data.mean()
-        self.rf_median = rf
+        self._rf_median = rf
 
     def _set_temperature_median(self) -> None:
         """Return Otto-Bliesner et al. 2016 temperature."""
@@ -500,7 +470,7 @@ class OttoBliesner(BaseModel):
         x_ax = volcano_base.manipulate.dt2float(temp.time.data)
         temp_lin_reg = scipy.stats.linregress(x_ax, temp.data)
         temp.data -= x_ax * temp_lin_reg.slope + temp_lin_reg.intercept
-        self.temperature_median = temp
+        self._temperature_median = temp
 
     def _set_aligned_arrays(self) -> None:
         """Return Otto-Bliesner et al. 2016 SO2, RF and temperature peaks.
@@ -508,17 +478,30 @@ class OttoBliesner(BaseModel):
         The peaks are best estimates from the full time series.
         """
         # Set fluctuations to be positive
-        temp = self.temperature_median
+        temp = self.temperature_median.copy()
         temp.data *= -1
-        rf = self.rf_median
+        rf = self.rf_median.copy()
         rf.data *= -1
 
-        so2_start = self.so2_delta
-        # A 210 days shift forward give the best timing of the temperature peak and 150
-        # days forward give the timing for the radiative forcing peak. A 190 days shift
+        so2_start = self.so2_delta.copy()
+        # A 225 days shift forward give the best timing of the temperature peak and 150
+        # days forward give the timing for the radiative forcing peak. A 180 days shift
         # back give the best timing for when the temperature and radiative forcing
         # perturbations start (eruption day). Done by eye measure.
-        d1, d2, d3 = 190, 150, 210
+        match self.freq:
+            case "h1":
+                d1, d2, d3 = 180, 150, 225
+            case "h0":
+                _warn_skips = (os.path.dirname(__file__),)
+                warnings.warn(  # noqa: B028
+                    "The peak finding is more precise when working with daily data."
+                    " If you are interested in finding peak values of RF and"
+                    " temperature, use daily frequency (`h1`).",
+                    skip_file_prefixes=_warn_skips,
+                )
+                d1, d2, d3 = -1, 0, 0
+            case _:
+                volcano_base.never_called(self.freq)
         so2_start = so2_start.assign_coords(
             time=so2_start.time.data - datetime.timedelta(days=d1)
         )
@@ -539,7 +522,10 @@ class OttoBliesner(BaseModel):
             so2_temp_peak = so2_rf_peak[:-1]
             rf = rf[:-1]
             temp = temp[:-1]
-        self.aligned_arrays = {
+        self._aligned_arrays: dict[
+            Literal["so2-start", "so2-rf", "so2-temperature", "rf", "temperature"],
+            xr.DataArray,
+        ] = {
             "so2-start": so2_start,
             "so2-rf": so2_rf_peak,
             "so2-temperature": so2_temp_peak,
@@ -556,22 +542,19 @@ class OttoBliesner(BaseModel):
         rf_v = self.aligned_arrays["rf"].data[_idx_rf].flatten()
         temp_v = self.aligned_arrays["temperature"].data[_idx_temp].flatten()
         _ids = so2.argsort()
-        self.so2_peaks = so2[_ids]
-        self.rf_peaks = rf_v[_ids]
-        self.temperature_peaks = temp_v[_ids]
+        self._so2_peaks = so2[_ids]
+        self._rf_peaks = rf_v[_ids]
+        self._temperature_peaks = temp_v[_ids]
 
 
 def main():
     """Run the main function."""
-    ob16_day = OttoBliesner()
-    plt.plot(ob16_day.so2_peaks, ob16_day.rf_peaks)
-    plt.plot(ob16_day.so2_peaks, ob16_day.temperature_peaks)
-    plt.figure()
-    ob16_day.aligned_arrays["rf"].plot()
-    ob16_day.aligned_arrays["temperature"].plot()
-    ob16_day.aligned_arrays["so2-start"].plot()
-    ob16_day.aligned_arrays["so2-rf"].plot()
-    ob16_day.aligned_arrays["so2-temperature"].plot()
+    rf = plt.figure().gca()
+    temp = plt.figure().gca()
+    ob16_month = OttoBliesner(freq="h0")
+    a, b, c = ob16_month.so2_peaks, ob16_month.rf_peaks, ob16_month.temperature_peaks
+    rf.plot(a, b, "o", label="RF")
+    temp.plot(a, c, "o", label="Temperature")
     plt.show()
 
 
