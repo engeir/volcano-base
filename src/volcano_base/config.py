@@ -1,10 +1,19 @@
 """Configuration file for `volcano-base`."""
 
 import pathlib
-from typing import Literal
+from typing import Literal, Never, NoReturn
 
 import tomllib
 from returns.result import Failure, Result, Success
+
+
+def never_called(value: Never) -> NoReturn:
+    """Raise an error if a value is passed to a function that should never be called."""
+    # The function is useful when running mypy. If, in a series of if/elif or
+    # match/case, a variable is not fully handled, mypy will complain and say that the
+    # variable is of the wrong type when this function is called in the final `else`
+    # clause.
+    raise AssertionError("Code is unreachable.")
 
 
 def ask_then_create(file_path: pathlib.Path) -> None:

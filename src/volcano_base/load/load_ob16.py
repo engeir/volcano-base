@@ -1,244 +1,562 @@
 """Load the Otto-Bliesner et al. 2016 data into xarray objects."""
 
 import datetime
+import itertools
+import os
+import pathlib
 import re
-from typing import Literal, overload
+import warnings
+from typing import Literal
 
+import matplotlib.pyplot as plt
+import nc_time_axis  # noqa: F401
 import numpy as np
 import scipy
 import xarray as xr
+from pydantic import BaseModel, Field
 
 import volcano_base
 
 
-def _get_ob16_rf_temp_arrays() -> tuple[list[xr.DataArray], list[xr.DataArray]]:
-    """Create samples from Otto-Bliesner et al. 2016.
+class Ob16FileNotFound(FileNotFoundError):
+    """Raise an error if one of the Otto-Bliesner et al. (2016) files are not found."""
 
-    Returns
-    -------
-    tuple[list[xr.DataArray], list[xr.DataArray]]
-        The RF and temperature arrays in two lists
+    def __init__(self, *args: object) -> None:
+        self.message = "Cannot find the necessary Otto-Bliesner et al. 2016 files. Please run the `save_to_npz` function within `down.ob16` to see what files are missing."
+        super().__init__(self.message)
 
-    Raises
-    ------
-    FileNotFoundError
-        If the directory where all the files is not found.
+
+class OttoBliesner(BaseModel):
+    """Object holding time series related to data from Otto-Bliesner et al. (2016).
+
+    Parameters
+    ----------
+    freq : Literal["h0", "h1"], optional
+        Frequency of data as set by the nhtfrq field
+        (https://www2.cesm.ucar.edu/models/cesm1.0/cesm/cesm_doc_1_0_4/x2602.html), by
+        default "h1".
     """
-    # Need AOD and RF seasonal and annual means, as well as an array of equal length
-    # with the corresponding time-after-eruption.
-    path = volcano_base.config.DATA_PATH / "cesm-lme"
-    if not path.exists():
-        raise FileNotFoundError(
-            "Cannot find CESM-LME files. You may try to run the `save_to_npz` function"
-            f" within {__name__}."
+
+    freq: Literal["h0", "h1"] = Field(
+        default="h1",
+        description="Frequency of data as set by the nhtfrq field (https://www2.cesm.ucar.edu/models/cesm1.0/cesm/cesm_doc_1_0_4/x2602.html)",
+    )
+
+    class Config:
+        """Configuration for the OttoBliesner BaseModel object."""
+
+        validate_assignment = True
+        frozen = True
+        extra = "forbid"
+        strict = True
+
+    @property
+    def temperature_ensemble(
+        self,
+    ) -> tuple[xr.DataArray, xr.DataArray, xr.DataArray, xr.DataArray, xr.DataArray]:
+        """Return the temperature ensemble.
+
+        Returns
+        -------
+        tuple[xr.DataArray, xr.DataArray, xr.DataArray, xr.DataArray, xr.DataArray]
+            The ensemble members.
+        """
+        if not hasattr(self, "_temperature_ensemble"):
+            self._temperature_ensemble = self._set_rf_temp_ensembles("TREFHT")
+        return self._temperature_ensemble
+
+    @property
+    def rf_ensemble(
+        self,
+    ) -> tuple[xr.DataArray, xr.DataArray, xr.DataArray, xr.DataArray, xr.DataArray]:
+        """Return the radiative forcing ensemble.
+
+        Returns
+        -------
+        tuple[xr.DataArray, xr.DataArray, xr.DataArray, xr.DataArray, xr.DataArray]
+            The ensemble members.
+        """
+        if not hasattr(self, "_rf_ensemble"):
+            self._rf_ensemble = self._set_rf_temp_ensembles("FSNTOA")
+        return self._rf_ensemble
+
+    @property
+    def rf_median(self) -> xr.DataArray:
+        """Return the median of the radiative forcing time series.
+
+        Returns
+        -------
+        xr.DataArray
+            Median of the radiative forcing time series
+        """
+        self._set_rf_median()
+        return self._rf_median
+
+    @property
+    def temperature_median(self) -> xr.DataArray:
+        """Return the median of the temperature time series.
+
+        Returns
+        -------
+        xr.DataArray
+            Median of the temperature time series
+        """
+        if not hasattr(self, "_temperature_median"):
+            self._set_temperature_median()
+        return self._temperature_median
+
+    @property
+    def temperature_peaks(self) -> np.ndarray:
+        """Return the temperature peaks.
+
+        Returns
+        -------
+        np.ndarray
+            Array holding all found peak values
+        """
+        if not hasattr(self, "_temperature_peaks"):
+            self._set_peak_arrays()
+        return self._temperature_peaks
+
+    @property
+    def rf_peaks(self) -> np.ndarray:
+        """Return the radiative forcing peaks.
+
+        Returns
+        -------
+        np.ndarray
+            Array holding all found peak values
+        """
+        if not hasattr(self, "_rf_peaks"):
+            self._set_peak_arrays()
+        return self._rf_peaks
+
+    @property
+    def so2(self) -> xr.DataArray:
+        """Return the SO2 time series.
+
+        Returns
+        -------
+        xr.DataArray
+            The original SO2 time series
+        """
+        if not hasattr(self, "_so2"):
+            self._set_so2_full_timeseries()
+        return self._so2
+
+    @property
+    def so2_delta(self) -> xr.DataArray:
+        """Return the SO2 delta time series.
+
+        Returns
+        -------
+        xr.DataArray
+            The SO2 time series with peaks only
+        """
+        if not hasattr(self, "_so2_delta"):
+            self._set_so2_peak_timeseries()
+        return self._so2_delta
+
+    @property
+    def aligned_arrays(
+        self,
+    ) -> dict[
+        Literal["so2-start", "so2-rf", "so2-temperature", "rf", "temperature"],
+        xr.DataArray,
+    ]:
+        """Return the aligned SO2, RF and temperature arrays.
+
+        Returns
+        -------
+        dict[Literal['so2-start', 'so2-rf', 'so2-temperature', 'rf', 'temperature'], xr.DataArray]
+            The RF and temperature arrays along with SO2 arrays aligned with the
+            eruption start, RF peak and temperature peak.
+        """
+        if not hasattr(self, "_aligned_arrays"):
+            self._set_aligned_arrays()
+        return self._aligned_arrays
+
+    @property
+    def so2_peaks(self) -> np.ndarray:
+        """Return the SO2 peaks.
+
+        Returns
+        -------
+        np.ndarray
+            Array holding all SO2 peak values
+        """
+        self._set_peak_arrays()
+        return self._so2_peaks
+
+    def _set_so2_full_timeseries(self) -> None:
+        """Load the npz file with volcanic injection."""
+        file = "IVI2LoadingLatHeight501-2000_L18_c20100518.nc"
+        if not (fn := volcano_base.config.DATA_PATH / "cesm-lme" / file).exists():
+            print(f"Cannot find {fn.resolve()}")
+            volcano_base.down.save_historical_so2(fn)
+        ds = xr.open_dataset(fn)
+        avgs_list = volcano_base.manipulate.mean_flatten([ds.colmass], dims=["lat"])
+        avgs = avgs_list[0]
+        # Scale so that the unit is now in Tg(SO2) (Otto-Bliesner et al. (2016)).
+        avgs = avgs / avgs.max() * 257.9 / 3 * 2
+        f_time = avgs.time.data
+        f_time = f_time - f_time[0] + 501
+        avgs = avgs.assign_coords(
+            time=volcano_base.manipulate.float2dt(f_time, freq="MS")
         )
-    pattern = re.compile("([A-Z]+)-00[1-5]\\.npz$", re.X)
-    files_ = list(path.rglob("*00[1-5].npz"))
-    rf, temp = [], []
-    for file in files_:
-        if isinstance(search := pattern.search(str(file)), re.Match):
-            array = _load_numpy(file.resolve())
+        self._so2 = avgs
+
+    def _set_so2_peak_timeseries(self) -> None:
+        """Load in mean stratospheric volcanic sulfate aerosol injections.
+
+        The time series are daily resolved, with SO2 injections represented as single day
+        peaks.
+
+        Notes
+        -----
+        The data is from Gao et al. (2008) `data
+        <http://climate.envsci.rutgers.edu/IVI2/>`_, and was used as input to the model
+        simulations by Otto-Bliesner et al. (2016).
+        """
+        time_ = volcano_base.manipulate.dt2float(self.so2.time.data)
+        so2 = self.so2.data
+        so2, time_ = self._find_peaks_in_so2(so2, time_)
+        match self.freq:
+            case "h0":
+                freq = "MS"
+            case "h1":
+                freq = "D"
+            case _:
+                volcano_base.never_called(self.freq)
+        da = xr.DataArray(
+            so2,
+            dims=["time"],
+            coords={"time": volcano_base.manipulate.float2dt(time_, freq)},
+            name="Mean stratospheric volcanic sulfate aerosol injections [Tg]",
+        )
+        da = da.assign_coords(time=da.time.data + datetime.timedelta(days=14))
+        self._so2_delta = da
+
+    def _find_peaks_in_so2(
+        self,
+        frc: np.ndarray,
+        time_: xr.CFTimeIndex,
+    ) -> tuple[np.ndarray, xr.CFTimeIndex]:
+        new_frc = np.zeros_like(frc)
+        limit = 2e-6
+        for i, v in enumerate(frc):
+            if i == 0 and v > limit:
+                new_frc[i] = v
+                continue
+            if v > limit and v > frc[i - 1]:
+                new_frc[i] = v
+            if new_frc[i - 1] > limit and new_frc[i - 1] < v:
+                new_frc[i - 1] = 0
+        # Go from monthly to daily (this is fine as long as we use a spiky forcing). We
+        # start in December.
+        match self.freq:
+            case "h0":
+                ...
+            case "h1":
+                new_frc = self._month2day(new_frc, start=12)
+                # The new time axis now goes down to one day
+                # thetime_ = np.linspace(501, 2002, (2002 - 501) * 365 + 1)
+                # thetime_ = thetime_[: len(new_frc)]
+                # time_ = xr.CFTimeIndex(thetime_)
+                time_ = xr.cftime_range(
+                    start="0501", end="2002", freq="D", calendar="noleap"
+                )[: len(new_frc)]
+                days_in_year = 365
+                time_ = time_.map(lambda x: x.toordinal() / days_in_year)
+            case _:
+                volcano_base.never_called(self.freq)
+        return new_frc, time_
+
+    @staticmethod
+    def _month2day(
+        arr: np.ndarray,
+        start: Literal[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] = 1,
+    ) -> np.ndarray:
+        # Go from monthly to daily
+        newest = np.array([])
+        # Add 30, 29 or 27 elements between all elements: months -> days
+        days_ = (30, 27, 30, 29, 30, 29, 30, 30, 29, 30, 29, 30)
+        days = itertools.cycle(days_)
+        for _ in range(start - 1):
+            next(days)
+        for month in arr:
+            insert_ = np.zeros(next(days))
+            newest = np.r_[newest, np.array([month])]
+            newest = np.r_[newest, insert_]
+        # The new time axis now goes down to one day
+        return newest
+
+    def _set_rf_temp_ensembles(
+        self, search_group: str
+    ) -> tuple[xr.DataArray, xr.DataArray, xr.DataArray, xr.DataArray, xr.DataArray]:
+        """Create samples from Otto-Bliesner et al. 2016.
+
+        Parameters
+        ----------
+        search_group : str
+            The variable to search for in the files.
+
+        Returns
+        -------
+        tuple[xr.DataArray, xr.DataArray, xr.DataArray, xr.DataArray, xr.DataArray]
+            The ensemble members.
+
+        Raises
+        ------
+        FileNotFoundError
+            If the directory where all the files is not found.
+        """
+        # Need AOD and RF seasonal and annual means, as well as an array of equal length
+        # with the corresponding time-after-eruption.
+        path = volcano_base.config.DATA_PATH / "cesm-lme"
+        if not path.exists():
+            raise Ob16FileNotFound()
+        match self.freq:
+            case "h1":
+                pattern = re.compile("/([A-Z]+)-00[1-5]\\.npz$", re.X)
+            case "h0":
+                pattern = re.compile("/([A-Z]+)-monthly-00[1-5]\\.npz$", re.X)
+            case _:
+                volcano_base.never_called(self.freq)
+        files_ = list(path.rglob("*00[1-5].npz"))
+        return self._load_npz(files_, pattern, search_group)
+
+    def _load_npz(
+        self, files_: list[pathlib.Path], pattern: re.Pattern, search_group: str
+    ) -> tuple[xr.DataArray, xr.DataArray, xr.DataArray, xr.DataArray, xr.DataArray]:
+        arrs: list[xr.DataArray] = []
+        match self.freq:
+            case "h1":
+                freq = "D"
+                shift = 0
+            case "h0":
+                freq = "MS"
+                shift = 15
+            case _:
+                volcano_base.never_called(self.freq)
+        for file in files_:
+            if isinstance(search := pattern.search(str(file)), re.Match):
+                if search.groups()[0] == search_group:
+                    array = self._load_numpy(file.resolve())
+                    s = "0850-01-01"
+                    t = xr.cftime_range(
+                        start=s, periods=len(array.data), calendar="noleap", freq=freq
+                    ) + datetime.timedelta(days=shift)
+                    arrs.append(array.assign_coords({"time": t}))
+        maxfiles = 5
+        if len(arrs) != maxfiles:
+            raise Ob16FileNotFound()
+        return arrs[0], arrs[1], arrs[2], arrs[3], arrs[4]
+
+    def _load_nc(
+        self, files_: list[pathlib.Path], pattern: re.Pattern, search_group: str
+    ) -> tuple[xr.DataArray, xr.DataArray, xr.DataArray, xr.DataArray, xr.DataArray]:
+        arrs: list[xr.DataArray] = []
+        for file in files_:
+            if isinstance(search := pattern.search(str(file)), re.Match):
+                array = xr.open_dataset(file.resolve())
+                if search.groups()[0] == search_group:
+                    arrs.append(array[search_group])
+        maxfiles = 5
+        if len(arrs) != maxfiles:
+            raise ValueError(
+                f"The number of ensemble members is not 5, found {len(arrs)}. Please check the files."
+            )
+        return arrs[0], arrs[1], arrs[2], arrs[3], arrs[4]
+
+    @staticmethod
+    def _load_numpy(np_file) -> xr.DataArray:
+        """Load the content of an npz file as an xarray DataArray."""
+        with np.load(np_file, allow_pickle=True) as data:
+            two_dim_data = 2
+            if data["data"].ndim == two_dim_data:
+                if "lev" in data.files and data["lev"].shape != ():
+                    lev_str = "lev"
+                elif "ilev" in data.files and data["ilev"].shape != ():
+                    lev_str = "ilev"
+                else:
+                    raise KeyError(
+                        f"There is no level information in the file {np_file}"
+                    )
+                coords = {"time": data["times"], lev_str: data[lev_str]}
+                dims = ["time", lev_str]
+            else:
+                coords = {"time": data["times"]}
+                dims = ["time"]
+            xarr = xr.DataArray(data["data"], dims=dims, coords=coords)
+        return xarr
+
+    def _remove_temp_seasonality(self, arr: xr.DataArray) -> xr.DataArray:
+        """Remove seasonality by subtracting CESM LME control run."""
+        match self.freq:
+            case "h0":
+                f1 = "MS"
+                specifier = "-monthly"
+                shift = 15
+            case "h1":
+                f1 = "D"
+                specifier = ""
+                shift = 0
+            case _:
+                volcano_base.never_called(self.freq)
+        file_name = (
+            volcano_base.config.DATA_PATH
+            / "cesm-lme"
+            / f"TREFHT850forcing-control{specifier}-003.npz"
+        )
+        if file_name.exists():
+            array = self._load_numpy(file_name.resolve())
             s = "0850-01-01"
             t = xr.cftime_range(
-                start=s, periods=len(array.data), calendar="noleap", freq="D"
-            )
-            if search.groups()[0] == "TREFHT":
-                temp.append(array.assign_coords({"time": t}))
-            elif search.groups()[0] == "FSNTOA":
-                rf.append(array.assign_coords({"time": t}))
-    return rf, temp
+                start=s, periods=len(array.data), calendar="noleap", freq=f1
+            ) + datetime.timedelta(days=shift)
+            raw_temp = array.assign_coords({"time": t})
+        match self.freq:
+            case "h0":
+                # month_mean = raw_temp.resample(time="MS").mean()
+                month_mean = raw_temp.groupby("time.month").mean("time")
+                raw_temp, arr = xr.align(raw_temp, arr)
+                return (
+                    arr.groupby("time.month")
+                    - month_mean
+                    + volcano_base.config.MEANS["TREFHT"]
+                )
+            case "h1":
+                day_mean = raw_temp.groupby("time.dayofyear").mean()
+                raw_temp, arr = xr.align(raw_temp, arr)
+                return (
+                    arr.groupby("time.dayofyear")
+                    - day_mean
+                    + volcano_base.config.MEANS["TREFHT"]
+                )
+            case _:
+                volcano_base.never_called(self.freq)
 
-
-def _load_numpy(np_file) -> xr.DataArray:
-    """Load the content of an npz file as an xarray DataArray."""
-    with np.load(np_file, allow_pickle=True) as data:
-        two_dim_data = 2
-        if data["data"].ndim == two_dim_data:
-            if "lev" in data.files and data["lev"].shape != ():
-                lev_str = "lev"
-            elif "ilev" in data.files and data["ilev"].shape != ():
-                lev_str = "ilev"
-            else:
-                raise KeyError(f"There is no level information in the file {np_file}")
-            coords = {"time": data["times"], lev_str: data[lev_str]}
-            dims = ["time", lev_str]
-        else:
-            coords = {"time": data["times"]}
-            dims = ["time"]
-        xarr = xr.DataArray(data["data"], dims=dims, coords=coords)
-    return xarr
-
-
-def _remove_seasonality_ob16(arr: xr.DataArray, monthly: bool = False) -> xr.DataArray:
-    """Remove seasonality by subtracting CESM LME control run."""
-    file_name = (
-        volcano_base.config.DATA_PATH / "cesm-lme" / "TREFHT850forcing-control-003.npz"
-    )
-    if file_name.exists():
-        array = _load_numpy(file_name.resolve())
-        s = "0850-01-01"
-        t = xr.cftime_range(
-            start=s, periods=len(array.data), calendar="noleap", freq="D"
+    def _set_rf_median(self) -> None:
+        """Return Otto-Bliesner et al. 2016 radiative forcing."""
+        rf = volcano_base.manipulate.get_median(
+            list(self.rf_ensemble).copy(), xarray=True
         )
-        raw_temp = array.assign_coords({"time": t})
-    if monthly:
-        raw_temp = raw_temp.resample(time="MS").mean()
-        raw_temp, arr = xr.align(raw_temp, arr)
-        month_mean = raw_temp.groupby("time.month").mean("time")
-        return (
-            arr.groupby("time.month") - month_mean + volcano_base.config.MEANS["TREFHT"]
+        # Remove noise in Fourier domain (seasonal and 6-month cycles)
+        match self.freq:
+            case "h0":
+                f1 = 1.014
+            case "h1":
+                f1 = 1
+            case _:
+                volcano_base.never_called(self.freq)
+        rf = volcano_base.manipulate.remove_seasonality([rf.copy()], freq=f1)[0]
+        rf = volcano_base.manipulate.remove_seasonality([rf], freq=f1 * 2)[0]
+        # Subtract the mean
+        rf.data -= rf.data.mean()
+        self._rf_median = rf
+
+    def _set_temperature_median(self) -> None:
+        """Return Otto-Bliesner et al. 2016 temperature."""
+        temp = volcano_base.manipulate.get_median(
+            list(self.temperature_ensemble).copy(), xarray=True
         )
-    day_mean = raw_temp.groupby("time.dayofyear").mean()
-    raw_temp, arr = xr.align(raw_temp, arr)
-    return (
-        arr.groupby("time.dayofyear") - day_mean + volcano_base.config.MEANS["TREFHT"]
-    )
+        # Seasonality is removed by use of a control run temperature time series, where we
+        # compute a climatology mean for each day of the year which is subtracted from the
+        # time series.
+        temp = self._remove_temp_seasonality(temp)
+        # Adjust the temperature so its mean is at zero. We also remove a slight drift by
+        # means of a linear regression fit.
+        x_ax = volcano_base.manipulate.dt2float(temp.time.data)
+        temp_lin_reg = scipy.stats.linregress(x_ax, temp.data)
+        temp.data -= x_ax * temp_lin_reg.slope + temp_lin_reg.intercept
+        self._temperature_median = temp
+
+    def _set_aligned_arrays(self) -> None:
+        """Return Otto-Bliesner et al. 2016 SO2, RF and temperature peaks.
+
+        The peaks are best estimates from the full time series.
+        """
+        # Set fluctuations to be positive
+        temp = self.temperature_median.copy()
+        temp.data *= -1
+        rf = self.rf_median.copy()
+        rf.data *= -1
+
+        so2_start = self.so2_delta.copy()
+        # A 225 days shift forward give the best timing of the temperature peak and 150
+        # days forward give the timing for the radiative forcing peak. A 180 days shift
+        # back give the best timing for when the temperature and radiative forcing
+        # perturbations start (eruption day). Done by eye measure.
+        match self.freq:
+            case "h1":
+                d1, d2, d3 = 180, 150, 225
+            case "h0":
+                _warn_skips = (os.path.dirname(__file__),)
+                warnings.warn(  # noqa: B028
+                    "The peak finding is more precise when working with daily data."
+                    " If you are interested in finding peak values of RF and"
+                    " temperature, use daily frequency (`h1`).",
+                    skip_file_prefixes=_warn_skips,
+                )
+                d1, d2, d3 = -1, 0, 0
+            case _:
+                volcano_base.never_called(self.freq)
+        so2_start = so2_start.assign_coords(
+            time=so2_start.time.data - datetime.timedelta(days=d1)
+        )
+        so2_rf_peak = so2_start.assign_coords(
+            time=so2_start.time.data + datetime.timedelta(days=d2)
+        )
+        so2_temp_peak = so2_start.assign_coords(
+            time=so2_start.time.data + datetime.timedelta(days=d3)
+        )
+
+        so2_start, so2_rf_peak, so2_temp_peak, rf, temp = xr.align(
+            so2_start, so2_rf_peak, so2_temp_peak, rf, temp
+        )
+
+        if not len(so2_start) % 2:
+            so2_start = so2_start[:-1]
+            so2_rf_peak = so2_rf_peak[:-1]
+            so2_temp_peak = so2_rf_peak[:-1]
+            rf = rf[:-1]
+            temp = temp[:-1]
+        self._aligned_arrays: dict[
+            Literal["so2-start", "so2-rf", "so2-temperature", "rf", "temperature"],
+            xr.DataArray,
+        ] = {
+            "so2-start": so2_start,
+            "so2-rf": so2_rf_peak,
+            "so2-temperature": so2_temp_peak,
+            "rf": rf,
+            "temperature": temp,
+        }
+
+    def _set_peak_arrays(self) -> None:
+        # Mask out all non-zero SO2 values, and the corresponding RF and temperature
+        # values.
+        _idx_rf = np.argwhere(self.aligned_arrays["so2-rf"].data > 0)
+        _idx_temp = np.argwhere(self.aligned_arrays["so2-temperature"].data > 0)
+        so2 = self.aligned_arrays["so2-rf"].data[_idx_rf].flatten()
+        rf_v = self.aligned_arrays["rf"].data[_idx_rf].flatten()
+        temp_v = self.aligned_arrays["temperature"].data[_idx_temp].flatten()
+        _ids = so2.argsort()
+        self._so2_peaks = so2[_ids]
+        self._rf_peaks = rf_v[_ids]
+        self._temperature_peaks = temp_v[_ids]
 
 
-@overload
-def get_ob16_rf(ensemble: Literal[False] = False) -> xr.DataArray:
-    ...
-
-
-@overload
-def get_ob16_rf(ensemble: Literal[True]) -> list[xr.DataArray]:
-    ...
-
-
-def get_ob16_rf(ensemble: bool = False) -> xr.DataArray | list[xr.DataArray]:
-    """Return Otto-Bliesner et al. 2016 radiative forcing.
-
-    Parameters
-    ----------
-    ensemble : bool, optional
-        Whether to return the full ensemble or just the median, by default False
-
-    Returns
-    -------
-    xr.DataArray | list[xr.DataArray]
-        The radiative forcing time series
-    """
-    rf, _ = _get_ob16_rf_temp_arrays()
-    if ensemble:
-        return rf
-    # Add RF from the FSNTOA variable (daily) ---------------------------------------- #
-    # We load in the original FSNTOA 5 member ensemble and compute the ensemble mean.
-    rf_fr = volcano_base.manipulate.get_median(rf, xarray=True)
-    # Remove noise in Fourier domain (seasonal and 6-month cycles)
-    rf_fr = volcano_base.manipulate.remove_seasonality([rf_fr.copy()])[0]
-    rf_fr = volcano_base.manipulate.remove_seasonality([rf_fr], freq=2)[0]
-    # Subtract the mean
-    rf_fr.data -= rf_fr.data.mean()
-    return rf_fr
-
-
-@overload
-def get_ob16_temperature(ensemble: Literal[False] = False) -> xr.DataArray:
-    ...
-
-
-@overload
-def get_ob16_temperature(ensemble: Literal[True]) -> list[xr.DataArray]:
-    ...
-
-
-def get_ob16_temperature(ensemble: bool = False) -> xr.DataArray | list[xr.DataArray]:
-    """Return Otto-Bliesner et al. 2016 temperature.
-
-    Parameters
-    ----------
-    ensemble : bool, optional
-        Whether to return the full ensemble or just the median, by default False
-
-    Returns
-    -------
-    xr.DataArray | list[xr.DataArray]
-        The temperature time series
-    """
-    # Temperature
-    _, temp_ = _get_ob16_rf_temp_arrays()
-    if ensemble:
-        return temp_
-    temp_xr = volcano_base.manipulate.get_median(temp_, xarray=True)
-    # Seasonality is removed by use of a control run temperature time series, where we
-    # compute a climatology mean for each day of the year which is subtracted from the
-    # time series.
-    # temp_xr = temp_xr.assign_coords(time=volcano_base.manipulate.float2dt(temp_xr.time.data))
-    temp_xr = _remove_seasonality_ob16(temp_xr)
-    # Adjust the temperature so its mean is at zero. We also remove a slight drift by
-    # means of a linear regression fit.
-    x_ax = volcano_base.manipulate.dt2float(temp_xr.time.data)
-    temp_lin_reg = scipy.stats.linregress(x_ax, temp_xr.data)
-    temp_xr.data -= x_ax * temp_lin_reg.slope + temp_lin_reg.intercept
-    return temp_xr
-
-
-def get_ob16_outputs(
-    only_peaks: bool = True,
-) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-    """Return Otto-Bliesner et al. 2016 SO2, RF and temperature peaks.
-
-    The peaks are best estimates from the full time series.
-
-    Parameters
-    ----------
-    only_peaks : bool, optional
-        Whether to return only the peaks or the full time series, by default True.
-
-    Returns
-    -------
-    tuple[np.ndarray, np.ndarray, np.ndarray]
-        SO2 peaks, RF peaks and temperature peaks
-    """
-    # Set fluctuations to be positive
-    temp_xr = get_ob16_temperature()
-    temp_xr.data *= -1
-    rf_fr = get_ob16_rf()
-    rf_fr.data *= -1
-
-    # Scale forcing from SO4 to SO2
-    so2_start = volcano_base.load.get_so2_ob16_peak_timeseries(xarray=True) / 3 * 2
-    # A 210 days shift forward give the best timing of the temperature peak and 150
-    # days forward give the timing for the radiative forcing peak. A 190 days shift
-    # back give the best timing for when the temperature and radiative forcing
-    # perturbations start (eruption day). Done by eye measure.
-    d1, d2, d3 = 190, 150, 210
-    so2_start = so2_start.assign_coords(
-        time=so2_start.time.data - datetime.timedelta(days=d1)
-    )
-    so2_rf_peak = so2_start.assign_coords(
-        time=so2_start.time.data + datetime.timedelta(days=d2)
-    )
-    so2_temp_peak = so2_start.assign_coords(
-        time=so2_start.time.data + datetime.timedelta(days=d3)
-    )
-
-    so2_start, so2_rf_peak, so2_temp_peak, rf_fr, temp = xr.align(
-        so2_start, so2_rf_peak, so2_temp_peak, rf_fr, temp_xr
-    )
-
-    if not len(so2_start) % 2:
-        so2_start = so2_start[:-1]
-        so2_rf_peak = so2_rf_peak[:-1]
-        so2_temp_peak = so2_rf_peak[:-1]
-        rf_fr = rf_fr[:-1]
-        temp = temp[:-1]
-    _cesm_lme_so2_start = so2_start
-    _cesm_lme_so2_rf_peak = so2_rf_peak
-    _cesm_lme_so2_temp_peak = so2_temp_peak
-    _cesm_lme_rf = rf_fr
-    _cesm_lme_temp = temp
-    if not only_peaks:
-        return _cesm_lme_so2_start.data, rf_fr.data, temp.data
-    # Mask out all non-zero forcing values, and the corresponding temperature values.
-    _idx_rf = np.argwhere(so2_rf_peak.data > 0)
-    _idx_temp = np.argwhere(so2_temp_peak.data > 0)
-    so2 = so2_rf_peak.data[_idx_rf].flatten()
-    rf_v = rf_fr.data[_idx_rf].flatten()
-    temp_v = temp.data[_idx_temp].flatten()
-    _ids = so2.argsort()
-    return so2[_ids], rf_v[_ids], temp_v[_ids]
+def main():
+    """Run the main function."""
+    rf = plt.figure().gca()
+    temp = plt.figure().gca()
+    ob16_month = OttoBliesner(freq="h0")
+    a, b, c = ob16_month.so2_peaks, ob16_month.rf_peaks, ob16_month.temperature_peaks
+    rf.plot(a, b, "o", label="RF")
+    temp.plot(a, c, "o", label="Temperature")
+    plt.show()
 
 
 if __name__ == "__main__":
-    _get_ob16_rf_temp_arrays()
+    main()
