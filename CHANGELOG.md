@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.2.0](https://github.com/engeir/volcano-base/compare/v1.1.0...v1.2.0) (2024-03-04)
+
+
+### Features
+
+* **ob16:** add SO2 decay to aligned arrays ([278bfaa](https://github.com/engeir/volcano-base/commit/278bfaae9ffcaef5d6d942f7021f178520c0e1b8))
+
+
+### Bug Fixes
+
+* **ob16:** progress file load should not use length to all files ([2e0c044](https://github.com/engeir/volcano-base/commit/2e0c044319f5f6686430dba4d89dccf010d117aa))
+
 ## [1.1.0](https://github.com/engeir/volcano-base/compare/v1.0.0...v1.1.0) (2024-03-04)
 
 
