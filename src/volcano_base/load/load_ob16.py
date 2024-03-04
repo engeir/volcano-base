@@ -216,6 +216,7 @@ class OttoBliesner(BaseModel):
         f_time = f_time - f_time[0] + 501
         avgs = avgs.assign_coords(
             time=volcano_base.manipulate.float2dt(f_time, freq="MS")
+            + datetime.timedelta(days=14)
         )
         self._so2 = avgs
 
@@ -255,40 +256,33 @@ class OttoBliesner(BaseModel):
         frc: np.ndarray,
         time_: xr.CFTimeIndex,
     ) -> tuple[np.ndarray, xr.CFTimeIndex]:
-        new_frc = np.zeros_like(frc)
+        new_array = np.zeros_like(frc)
         limit = 2e-6
         for i, v in enumerate(frc):
             if i == 0 and v > limit:
-                new_frc[i] = v
+                new_array[i] = v
                 continue
             if v > limit and v > frc[i - 1]:
-                new_frc[i] = v
-            if new_frc[i - 1] > limit and new_frc[i - 1] < v:
-                new_frc[i - 1] = 0
+                new_array[i] = v
+            if new_array[i - 1] > limit and new_array[i - 1] < v:
+                new_array[i - 1] = 0
         # Go from monthly to daily (this is fine as long as we use a spiky forcing). We
         # start in December.
         match self.freq:
             case "h0":
                 ...
             case "h1":
-                new_frc = self._month2day(new_frc, start=12)
-                # The new time axis now goes down to one day
-                # thetime_ = np.linspace(501, 2002, (2002 - 501) * 365 + 1)
-                # thetime_ = thetime_[: len(new_frc)]
-                # time_ = xr.CFTimeIndex(thetime_)
-                time_ = xr.cftime_range(
-                    start="0501", end="2002", freq="D", calendar="noleap"
-                )[: len(new_frc)]
-                days_in_year = 365
-                time_ = time_.map(lambda x: x.toordinal() / days_in_year)
+                new_array = self._month2day(new_array, start=12)
+                time_ = self._so2_daily_time_axis(new_array)
             case _:
                 volcano_base.never_called(self.freq)
-        return new_frc, time_
+        return new_array, time_
 
     @staticmethod
     def _month2day(
         arr: np.ndarray,
         start: Literal[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] = 1,
+        multiplier: int | Literal["auto"] = 0,
     ) -> np.ndarray:
         # Go from monthly to daily
         newest = np.array([])
@@ -298,7 +292,8 @@ class OttoBliesner(BaseModel):
         for _ in range(start - 1):
             next(days)
         for month in arr:
-            insert_ = np.zeros(next(days))
+            mult = float(month) if multiplier == "auto" else multiplier
+            insert_ = np.ones(next(days)) * mult
             newest = np.r_[newest, np.array([month])]
             newest = np.r_[newest, insert_]
         # The new time axis now goes down to one day
@@ -353,23 +348,39 @@ class OttoBliesner(BaseModel):
                 shift = 15
             case _:
                 volcano_base.never_called(self.freq)
-        for file in (
-            rich.progress.track(
-                files_,
-                total=maxfiles,
-                description=f"[cyan]Loading {search_group} files...",
-            )
-            if self.progress
-            else files_
-        ):
-            if isinstance(search := pattern.search(str(file)), re.Match):
-                if search.groups()[0] == search_group:
-                    array = self._load_numpy(file.resolve())
-                    s = "0850-01-01"
-                    t = xr.cftime_range(
-                        start=s, periods=len(array.data), calendar="noleap", freq=freq
-                    ) + datetime.timedelta(days=shift)
-                    arrs.append(array.assign_coords({"time": t}))
+        progress = rich.progress.Progress(
+            rich.progress.TextColumn("[progress.description]{task.description}"),
+            rich.progress.SpinnerColumn(),
+            rich.progress.BarColumn(),
+            rich.progress.TaskProgressColumn(),
+            rich.progress.MofNCompleteColumn(),
+            rich.progress.TimeRemainingColumn(elapsed_when_finished=True),
+            transient=not self.progress,
+        )
+        with progress:
+            if self.progress:
+                task_find_files = progress.add_task(
+                    f"[cyan]Loading {search_group} files...",
+                    total=maxfiles,
+                    start=False,
+                )
+                progress.start_task(task_find_files)
+            for file in files_:
+                if isinstance(search := pattern.search(str(file)), re.Match):
+                    if search.groups()[0] == search_group:
+                        array = self._load_numpy(file.resolve())
+                        s = "0850-01-01"
+                        t = xr.cftime_range(
+                            start=s,
+                            periods=len(array.data),
+                            calendar="noleap",
+                            freq=freq,
+                        ) + datetime.timedelta(days=shift)
+                        arrs.append(array.assign_coords({"time": t}))
+                        if self.progress:
+                            progress.advance(task_find_files)
+            if self.progress:
+                progress.stop_task(task_find_files)
         if len(arrs) != maxfiles:
             raise Ob16FileNotFound()
         return arrs[0], arrs[1], arrs[2], arrs[3], arrs[4]
@@ -506,13 +517,27 @@ class OttoBliesner(BaseModel):
 
         so2_decay_start = self.so2.copy()
         so2_start = self.so2_delta.copy()
-        # A 225 days shift forward give the best timing of the temperature peak and 150
-        # days forward give the timing for the radiative forcing peak. A 180 days shift
+        # A 44 days shift forward give the best timing of the temperature peak and 31
+        # days backward give the timing for the radiative forcing peak. A 180 days shift
         # back give the best timing for when the temperature and radiative forcing
-        # perturbations start (eruption day). Done by eye measure.
+        # perturbations start (eruption day). The original (daily, expanded with
+        # step-functions) SO2 input is shifted back 58 days. Done by eye measure.
         match self.freq:
             case "h1":
-                d1, d2, d3 = 180, 150, 225
+                new_array = self._month2day(
+                    so2_decay_start.data, start=12, multiplier="auto"
+                )
+                time_ = self._so2_daily_time_axis(new_array)
+                so2_decay_start = xr.DataArray(
+                    new_array,
+                    dims=["time"],
+                    coords={"time": volcano_base.manipulate.float2dt(time_, "D")},
+                    name="Mean stratospheric volcanic sulfate aerosol injections [Tg]",
+                )
+                so2_decay_start = so2_decay_start.assign_coords(
+                    time=so2_decay_start.time.data + datetime.timedelta(days=14)
+                )
+                d1, d2, d3, d4 = 180, -31, 44, 58
             case "h0":
                 _warn_skips = (os.path.dirname(__file__),)
                 warnings.warn(  # noqa: B028
@@ -521,20 +546,20 @@ class OttoBliesner(BaseModel):
                     " temperature, use daily frequency (`h1`).",
                     skip_file_prefixes=_warn_skips,
                 )
-                d1, d2, d3 = -1, 0, 0
+                d1, d2, d3, d4 = -1, 1, 1, -1
             case _:
                 volcano_base.never_called(self.freq)
-        so2_decay_start = so2_decay_start.assign_coords(
-            time=so2_decay_start.time.data - datetime.timedelta(days=d1)
-        )
-        so2_start = so2_start.assign_coords(
-            time=so2_start.time.data - datetime.timedelta(days=d1)
-        )
         so2_rf_peak = so2_start.assign_coords(
             time=so2_start.time.data + datetime.timedelta(days=d2)
         )
         so2_temp_peak = so2_start.assign_coords(
             time=so2_start.time.data + datetime.timedelta(days=d3)
+        )
+        so2_decay_start = so2_decay_start.assign_coords(
+            time=so2_decay_start.time.data - datetime.timedelta(days=d4)
+        )
+        so2_start = so2_start.assign_coords(
+            time=so2_start.time.data - datetime.timedelta(days=d1)
         )
 
         so2_decay_start, so2_start, so2_rf_peak, so2_temp_peak, rf, temp = xr.align(
@@ -567,6 +592,15 @@ class OttoBliesner(BaseModel):
             "temperature": temp,
         }
 
+    @staticmethod
+    def _so2_daily_time_axis(array: np.ndarray) -> xr.CFTimeIndex:
+        time_ = xr.cftime_range(start="0501", end="2002", freq="D", calendar="noleap")[
+            : len(array)
+        ]
+        days_in_year = 365
+        time_ = time_.map(lambda x: x.toordinal() / days_in_year)
+        return time_
+
     def _set_peak_arrays(self) -> None:
         # Mask out all non-zero SO2 values, and the corresponding RF and temperature
         # values.
@@ -583,12 +617,19 @@ class OttoBliesner(BaseModel):
 
 def main():
     """Run the main function."""
-    rf = plt.figure().gca()
-    temp = plt.figure().gca()
-    ob16_month = OttoBliesner(freq="h0")
-    a, b, c = ob16_month.so2_peaks, ob16_month.rf_peaks, ob16_month.temperature_peaks
-    rf.plot(a, b, "o", label="RF")
-    temp.plot(a, c, "o", label="Temperature")
+    # rf = plt.figure().gca()
+    # temp = plt.figure().gca()
+    ob16_month = OttoBliesner(freq="h1", progress=True)
+    plt.figure()
+    ob16_month.aligned_arrays["so2-decay-start"].plot()
+    ob16_month.aligned_arrays["so2-start"].plot()
+    ob16_month.aligned_arrays["so2-rf"].plot()
+    ob16_month.aligned_arrays["so2-temperature"].plot()
+    ob16_month.aligned_arrays["rf"].plot()
+    ob16_month.aligned_arrays["temperature"].plot()
+    # a, b, c = ob16_month.so2_peaks, ob16_month.rf_peaks, ob16_month.temperature_peaks
+    # rf.plot(a, b, "o", label="RF")
+    # temp.plot(a, c, "o", label="Temperature")
     plt.show()
 
 
