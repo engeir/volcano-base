@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/engeir/volcano-base/compare/v1.0.0...v1.1.0) (2024-03-04)
+
+
+### Features
+
+* **ob16:** add an optional progress bar when loading data ([d4b253d](https://github.com/engeir/volcano-base/commit/d4b253d6e7b7cf9c789e6720d0277271386ff80a))
+
 ## [1.0.0](https://github.com/engeir/volcano-base/compare/v0.8.6...v1.0.0) (2024-03-01)
 
 
