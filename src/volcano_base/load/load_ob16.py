@@ -11,6 +11,7 @@ from typing import Literal
 import matplotlib.pyplot as plt
 import nc_time_axis  # noqa: F401
 import numpy as np
+import rich
 import scipy
 import xarray as xr
 from pydantic import BaseModel, Field
@@ -35,11 +36,16 @@ class OttoBliesner(BaseModel):
         Frequency of data as set by the nhtfrq field
         (https://www2.cesm.ucar.edu/models/cesm1.0/cesm/cesm_doc_1_0_4/x2602.html), by
         default "h1".
+    progress : bool, optional
+        Show progress bar while loading in data. By default False.
     """
 
     freq: Literal["h0", "h1"] = Field(
         default="h1",
         description="Frequency of data as set by the nhtfrq field (https://www2.cesm.ucar.edu/models/cesm1.0/cesm/cesm_doc_1_0_4/x2602.html)",
+    )
+    progress: bool = Field(
+        default=False, description="Show progress bar while loading in data."
     )
 
     class Config:
@@ -339,7 +345,15 @@ class OttoBliesner(BaseModel):
                 shift = 15
             case _:
                 volcano_base.never_called(self.freq)
-        for file in files_:
+        for file in (
+            rich.progress.track(
+                files_,
+                total=len(files_),
+                description=f"[cyan]Loading {search_group} files...",
+            )
+            if self.progress
+            else files_
+        ):
             if isinstance(search := pattern.search(str(file)), re.Match):
                 if search.groups()[0] == search_group:
                     array = self._load_numpy(file.resolve())
