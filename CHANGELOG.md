@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.1](https://github.com/engeir/volcano-base/compare/v1.2.0...v1.2.1) (2024-03-04)
+
+
+### Bug Fixes
+
+* **ob16:** must consider that SO2 original is only in monthly resolution ([549d1a4](https://github.com/engeir/volcano-base/commit/549d1a455e99e167626d17118eaeb00c5ff51cb2))
+
 ## [1.2.0](https://github.com/engeir/volcano-base/compare/v1.1.0...v1.2.0) (2024-03-04)
 
 
