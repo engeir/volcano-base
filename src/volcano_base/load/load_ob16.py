@@ -336,6 +336,7 @@ class OttoBliesner(BaseModel):
         self, files_: list[pathlib.Path], pattern: re.Pattern, search_group: str
     ) -> tuple[xr.DataArray, xr.DataArray, xr.DataArray, xr.DataArray, xr.DataArray]:
         arrs: list[xr.DataArray] = []
+        maxfiles = 5
         match self.freq:
             case "h1":
                 freq = "D"
@@ -348,7 +349,7 @@ class OttoBliesner(BaseModel):
         for file in (
             rich.progress.track(
                 files_,
-                total=len(files_),
+                total=maxfiles,
                 description=f"[cyan]Loading {search_group} files...",
             )
             if self.progress
@@ -362,7 +363,6 @@ class OttoBliesner(BaseModel):
                         start=s, periods=len(array.data), calendar="noleap", freq=freq
                     ) + datetime.timedelta(days=shift)
                     arrs.append(array.assign_coords({"time": t}))
-        maxfiles = 5
         if len(arrs) != maxfiles:
             raise Ob16FileNotFound()
         return arrs[0], arrs[1], arrs[2], arrs[3], arrs[4]
