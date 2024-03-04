@@ -167,14 +167,21 @@ class OttoBliesner(BaseModel):
     def aligned_arrays(
         self,
     ) -> dict[
-        Literal["so2-start", "so2-rf", "so2-temperature", "rf", "temperature"],
+        Literal[
+            "so2-decay-start",
+            "so2-start",
+            "so2-rf",
+            "so2-temperature",
+            "rf",
+            "temperature",
+        ],
         xr.DataArray,
     ]:
         """Return the aligned SO2, RF and temperature arrays.
 
         Returns
         -------
-        dict[Literal['so2-start', 'so2-rf', 'so2-temperature', 'rf', 'temperature'], xr.DataArray]
+        dict[Literal['so2-decay-start', 'so2-start', 'so2-rf', 'so2-temperature', 'rf', 'temperature'], xr.DataArray]
             The RF and temperature arrays along with SO2 arrays aligned with the
             eruption start, RF peak and temperature peak.
         """
@@ -497,6 +504,7 @@ class OttoBliesner(BaseModel):
         rf = self.rf_median.copy()
         rf.data *= -1
 
+        so2_decay_start = self.so2.copy()
         so2_start = self.so2_delta.copy()
         # A 225 days shift forward give the best timing of the temperature peak and 150
         # days forward give the timing for the radiative forcing peak. A 180 days shift
@@ -516,6 +524,9 @@ class OttoBliesner(BaseModel):
                 d1, d2, d3 = -1, 0, 0
             case _:
                 volcano_base.never_called(self.freq)
+        so2_decay_start = so2_decay_start.assign_coords(
+            time=so2_decay_start.time.data - datetime.timedelta(days=d1)
+        )
         so2_start = so2_start.assign_coords(
             time=so2_start.time.data - datetime.timedelta(days=d1)
         )
@@ -526,20 +537,29 @@ class OttoBliesner(BaseModel):
             time=so2_start.time.data + datetime.timedelta(days=d3)
         )
 
-        so2_start, so2_rf_peak, so2_temp_peak, rf, temp = xr.align(
-            so2_start, so2_rf_peak, so2_temp_peak, rf, temp
+        so2_decay_start, so2_start, so2_rf_peak, so2_temp_peak, rf, temp = xr.align(
+            so2_decay_start, so2_start, so2_rf_peak, so2_temp_peak, rf, temp
         )
 
         if not len(so2_start) % 2:
+            so2_decay_start = so2_decay_start[:-1]
             so2_start = so2_start[:-1]
             so2_rf_peak = so2_rf_peak[:-1]
             so2_temp_peak = so2_rf_peak[:-1]
             rf = rf[:-1]
             temp = temp[:-1]
         self._aligned_arrays: dict[
-            Literal["so2-start", "so2-rf", "so2-temperature", "rf", "temperature"],
+            Literal[
+                "so2-decay-start",
+                "so2-start",
+                "so2-rf",
+                "so2-temperature",
+                "rf",
+                "temperature",
+            ],
             xr.DataArray,
         ] = {
+            "so2-decay-start": so2_decay_start,
             "so2-start": so2_start,
             "so2-rf": so2_rf_peak,
             "so2-temperature": so2_temp_peak,
