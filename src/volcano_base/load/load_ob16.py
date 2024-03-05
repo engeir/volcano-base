@@ -278,8 +278,8 @@ class OttoBliesner(BaseModel):
                 volcano_base.never_called(self.freq)
         return new_array, time_
 
-    @staticmethod
     def _month2day(
+        self,
         arr: np.ndarray,
         start: Literal[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] = 1,
         multiplier: int | Literal["auto"] = 0,
@@ -291,11 +291,26 @@ class OttoBliesner(BaseModel):
         days = itertools.cycle(days_)
         for _ in range(start - 1):
             next(days)
-        for month in arr:
-            mult = float(month) if multiplier == "auto" else multiplier
-            insert_ = np.ones(next(days)) * mult
-            newest = np.r_[newest, np.array([month])]
-            newest = np.r_[newest, insert_]
+        progress = self._setup_progress_bar()
+        with progress:
+            task_add_days = progress.add_task(
+                "[cyan]Converting from monthly to daily resolution...",
+                total=len(arr),
+                start=False,
+            )
+            if self.progress:
+                progress.start_task(task_add_days)
+            else:
+                progress.stop()
+            for month in arr:
+                mult = float(month) if multiplier == "auto" else multiplier
+                insert_ = np.ones(next(days)) * mult
+                newest = np.r_[newest, np.array([month])]
+                newest = np.r_[newest, insert_]
+                if self.progress:
+                    progress.advance(task_add_days)
+            if self.progress:
+                progress.stop_task(task_add_days)
         # The new time axis now goes down to one day
         return newest
 
@@ -334,6 +349,17 @@ class OttoBliesner(BaseModel):
         files_ = list(path.rglob("*00[1-5].npz"))
         return self._load_npz(files_, pattern, search_group)
 
+    def _setup_progress_bar(self) -> rich.progress.Progress:
+        return rich.progress.Progress(
+            rich.progress.TextColumn("[progress.description]{task.description}"),
+            rich.progress.SpinnerColumn(),
+            rich.progress.BarColumn(),
+            rich.progress.TaskProgressColumn(),
+            rich.progress.MofNCompleteColumn(),
+            rich.progress.TimeRemainingColumn(elapsed_when_finished=True),
+            transient=not self.progress,
+        )
+
     def _load_npz(
         self, files_: list[pathlib.Path], pattern: re.Pattern, search_group: str
     ) -> tuple[xr.DataArray, xr.DataArray, xr.DataArray, xr.DataArray, xr.DataArray]:
@@ -348,23 +374,17 @@ class OttoBliesner(BaseModel):
                 shift = 15
             case _:
                 volcano_base.never_called(self.freq)
-        progress = rich.progress.Progress(
-            rich.progress.TextColumn("[progress.description]{task.description}"),
-            rich.progress.SpinnerColumn(),
-            rich.progress.BarColumn(),
-            rich.progress.TaskProgressColumn(),
-            rich.progress.MofNCompleteColumn(),
-            rich.progress.TimeRemainingColumn(elapsed_when_finished=True),
-            transient=not self.progress,
-        )
+        progress = self._setup_progress_bar()
         with progress:
+            task_find_files = progress.add_task(
+                f"[cyan]Loading {search_group} files...",
+                total=maxfiles,
+                start=False,
+            )
             if self.progress:
-                task_find_files = progress.add_task(
-                    f"[cyan]Loading {search_group} files...",
-                    total=maxfiles,
-                    start=False,
-                )
                 progress.start_task(task_find_files)
+            else:
+                progress.stop()
             for file in files_:
                 if isinstance(search := pattern.search(str(file)), re.Match):
                     if search.groups()[0] == search_group:
@@ -538,6 +558,13 @@ class OttoBliesner(BaseModel):
                     time=so2_decay_start.time.data + datetime.timedelta(days=14)
                 )
                 d1, d2, d3, d4 = 180, -31, 44, 58
+                # We hard-code the slices to avoid the long aligning process
+                sds_slice = slice(127429, -122)
+                ss_slice = slice(127551, None)
+                sr_slice = slice(127402, -149)
+                st_slice = slice(127327, -224)
+                rf_slice = slice(0, -1929)
+                temp_slice = slice(0, -1929)
             case "h0":
                 _warn_skips = (os.path.dirname(__file__),)
                 warnings.warn(  # noqa: B028
@@ -547,6 +574,12 @@ class OttoBliesner(BaseModel):
                     skip_file_prefixes=_warn_skips,
                 )
                 d1, d2, d3, d4 = -1, 1, 1, -1
+                sds_slice = slice(4188, None)
+                ss_slice = slice(4188, None)
+                sr_slice = slice(4188, None)
+                st_slice = slice(4188, None)
+                rf_slice = slice(0, -58)
+                temp_slice = slice(0, -58)
             case _:
                 volcano_base.never_called(self.freq)
         so2_rf_peak = so2_start.assign_coords(
@@ -562,9 +595,18 @@ class OttoBliesner(BaseModel):
             time=so2_start.time.data - datetime.timedelta(days=d1)
         )
 
-        so2_decay_start, so2_start, so2_rf_peak, so2_temp_peak, rf, temp = xr.align(
-            so2_decay_start, so2_start, so2_rf_peak, so2_temp_peak, rf, temp
-        )
+        # Aligning the arrays takes a long time, so since we know the exact indices we
+        # instead slice the arrays to the correct length. Basically zero time versus 15
+        # seconds.
+        # so2_decay_start, so2_start, so2_rf_peak, so2_temp_peak, rf, temp = xr.align(
+        #     so2_decay_start, so2_start, so2_rf_peak, so2_temp_peak, rf, temp
+        # )
+        so2_decay_start = so2_decay_start[sds_slice]
+        so2_start = so2_start[ss_slice]
+        so2_rf_peak = so2_rf_peak[sr_slice]
+        so2_temp_peak = so2_temp_peak[st_slice]
+        rf = rf[rf_slice]
+        temp = temp[temp_slice]
 
         if not len(so2_start) % 2:
             so2_decay_start = so2_decay_start[:-1]
