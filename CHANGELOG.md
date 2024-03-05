@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.0](https://github.com/engeir/volcano-base/compare/v1.2.1...v1.3.0) (2024-03-05)
+
+
+### Features
+
+* **ob16:** remove xr.align in favour of normal slice ([e6f71e9](https://github.com/engeir/volcano-base/commit/e6f71e93f3b5c7d4908f070260048c3a1a402446))
+
 ## [1.2.1](https://github.com/engeir/volcano-base/compare/v1.2.0...v1.2.1) (2024-03-04)
 
 
