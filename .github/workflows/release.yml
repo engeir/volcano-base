@@ -14,11 +14,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Release please
-        uses: google-github-actions/release-please-action@v4
+        # uses: google-github-actions/release-please-action@v4
+        # id: release
+        # with:
+        #   token: ${{ secrets.RELEASE_TOKEN }}
+        #   release-type: python
+        uses: google-github-actions/release-please-action@v3
         id: release
         with:
           token: ${{ secrets.RELEASE_TOKEN }}
           release-type: python
+          package-name: volcano-base
+          extra-files: |
+            README.md
+          changelog-types: '[{"type":"feat","section":"Features","hidden":false},{"type":"fix","section":"Bug Fixes","hidden":false},{"type":"chore","section":"Miscellaneous","hidden":false},{"type":"style","section":"Styles","hidden":false},{"type":"refactor","section":"Code Refactoring","hidden":false},{"type":"perf","section":"Performance","hidden":false},{"type":"test","section":"Tests","hidden":false},{"type":"ci","section":"Continuous Integration","hidden":false},{"type":"build","section":"Build System","hidden":false},{"type":"docs","section":"Documentation","hidden":false}]'
       - uses: actions/checkout@v4
         if: ${{ steps.release.outputs.release_created }}
       - name: Install and build
