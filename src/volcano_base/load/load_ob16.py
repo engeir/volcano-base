@@ -612,7 +612,7 @@ class OttoBliesner(BaseModel):
             so2_decay_start = so2_decay_start[:-1]
             so2_start = so2_start[:-1]
             so2_rf_peak = so2_rf_peak[:-1]
-            so2_temp_peak = so2_rf_peak[:-1]
+            so2_temp_peak = so2_temp_peak[:-1]
             rf = rf[:-1]
             temp = temp[:-1]
         self._aligned_arrays: dict[
