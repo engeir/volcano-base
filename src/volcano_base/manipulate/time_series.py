@@ -577,6 +577,41 @@ def weighted_season_avg(da: xr.DataArray) -> xr.DataArray:
     return obs_sum / ones_out
 
 
+def weighted_monthly_avg(da: xr.DataArray) -> xr.DataArray:
+    """Calculate a temporal mean, weighted by days in each month.
+
+    Parameters
+    ----------
+    da : xr.DataArray
+        Input data structure to do temporal average on
+
+    Returns
+    -------
+    xr.DataArray
+        The new data structure with time averaged data
+
+    Notes
+    -----
+    From
+    https://ncar.github.io/esds/posts/2021/yearly-averages-xarray/#wrap-it-up-into-a-function
+    """
+    # Determine the month length
+    month_length = da.time.dt.days_in_month
+    # Calculate the weights
+    wgts = month_length.groupby("time.month") / month_length.groupby("time.month").sum()
+    # Make sure the weights in each year add up to 1
+    np.testing.assert_allclose(wgts.groupby("time.month").sum(xr.ALL_DIMS), np.ones(12))
+    # Setup our masking for nan values
+    cond = da.isnull()
+    ones = xr.where(cond, 0.0, 1.0)
+    # Calculate the numerator
+    obs_sum = (da * wgts).resample(time="MS").sum(dim="time")
+    # Calculate the denominator
+    ones_out = (ones * wgts).resample(time="MS").sum(dim="time")
+    # Return the weighted average
+    return obs_sum / ones_out
+
+
 def normalize_peaks(*args: tuple[list | np.ndarray, str]) -> tuple[list, ...]:
     """Normalize the input arrays.
 
