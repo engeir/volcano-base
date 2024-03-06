@@ -612,7 +612,26 @@ def normalize_peaks(*args: tuple[list | np.ndarray, str]) -> tuple[list, ...]:
 
 
 def sampling_rate(dates: np.ndarray) -> float:
-    """Find the sampling rate."""
+    """Find the sampling rate.
+
+    Parameters
+    ----------
+    dates : np.ndarray
+        An array of dates. The dates can be in the following formats:
+        - float
+        - datetime.datetime
+        - cftime._cftime.DatetimeNoLeap
+
+    Returns
+    -------
+    float
+        The sampling rate.
+
+    Raises
+    ------
+    TypeError
+        If the input date format is unknown.
+    """
     match dates[0]:
         case float():
             return np.mean(np.diff(dates))
@@ -629,4 +648,6 @@ def sampling_rate(dates: np.ndarray) -> float:
             cftime2float_ = dt2float(dates)
             return np.mean(np.diff(cftime2float_))
         case _:
-            raise TypeError("The input dates must be floats or datetime arrays.")
+            raise TypeError(
+                f"The input date format is unknown, found {type(dates[0]) = }"
+            )
