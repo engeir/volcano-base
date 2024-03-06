@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.1](https://github.com/engeir/volcano-base/compare/v1.4.0...v1.4.1) (2024-03-06)
+
+
+### Bug Fixes
+
+* **ob16:** so2 start one index (month) earlier ([539cf70](https://github.com/engeir/volcano-base/commit/539cf700cbdf66640119f92ee8b721cd8a1cce4b))
+
 ## [1.4.0](https://github.com/engeir/volcano-base/compare/v1.3.0...v1.4.0) (2024-03-06)
 
 
