@@ -524,19 +524,20 @@ class OttoBliesner(BaseModel):
         temp.data -= x_ax * temp_lin_reg.slope + temp_lin_reg.intercept
         self._temperature_median = temp
 
-    def _set_aligned_arrays(self) -> None:
-        """Return Otto-Bliesner et al. 2016 SO2, RF and temperature peaks.
-
-        The peaks are best estimates from the full time series.
-        """
-        # Set fluctuations to be positive
-        temp = self.temperature_median.copy()
-        temp.data *= -1
-        rf = self.rf_median.copy()
-        rf.data *= -1
-
-        so2_decay_start = self.so2.copy()
-        so2_start = self.so2_delta.copy()
+    def _force_align(
+        self,
+        so2_decay_start: xr.DataArray,
+        so2_start: xr.DataArray,
+        rf: xr.DataArray,
+        temp: xr.DataArray,
+    ) -> tuple[
+        xr.DataArray,
+        xr.DataArray,
+        xr.DataArray,
+        xr.DataArray,
+        xr.DataArray,
+        xr.DataArray,
+    ]:
         # A 44 days shift forward give the best timing of the temperature peak and 31
         # days backward give the timing for the radiative forcing peak. A 180 days shift
         # back give the best timing for when the temperature and radiative forcing
@@ -565,6 +566,18 @@ class OttoBliesner(BaseModel):
                 st_slice = slice(127327, -224)
                 rf_slice = slice(0, -1929)
                 temp_slice = slice(0, -1929)
+                so2_rf_peak = so2_start.assign_coords(
+                    time=so2_start.time.data + datetime.timedelta(days=d2)
+                )
+                so2_temp_peak = so2_start.assign_coords(
+                    time=so2_start.time.data + datetime.timedelta(days=d3)
+                )
+                so2_decay_start = so2_decay_start.assign_coords(
+                    time=so2_decay_start.time.data - datetime.timedelta(days=d4)
+                )
+                so2_start = so2_start.assign_coords(
+                    time=so2_start.time.data - datetime.timedelta(days=d1)
+                )
             case "h0":
                 _warn_skips = (os.path.dirname(__file__),)
                 warnings.warn(  # noqa: B028
@@ -573,27 +586,42 @@ class OttoBliesner(BaseModel):
                     " temperature, use daily frequency (`h1`).",
                     skip_file_prefixes=_warn_skips,
                 )
-                d1, d2, d3, d4 = -1, 1, 1, -1
-                sds_slice = slice(4188, None)
-                ss_slice = slice(4188, None)
-                sr_slice = slice(4188, None)
-                st_slice = slice(4188, None)
-                rf_slice = slice(0, -58)
-                temp_slice = slice(0, -58)
+                d1, d2, d3, d4 = 15, 15, 15, 15
+                sds_slice = slice(4189, -4)
+                ss_slice = slice(4193, None)
+                sr_slice = slice(4189, -4)
+                st_slice = slice(4184, -9)
+                rf_slice = slice(None, -63)
+                temp_slice = slice(None, -63)
+                so2_rf_peak = so2_start.assign_coords(
+                    time=xr.cftime_range(
+                        "0500-12", "2010", freq="MS", calendar="noleap"
+                    )[: len(so2_start)]
+                    + datetime.timedelta(days=d2)
+                )
+                so2_temp_peak = so2_start.assign_coords(
+                    # time=so2_start.time.data + datetime.timedelta(days=d3)
+                    time=xr.cftime_range(
+                        "0501-05", "2010", freq="MS", calendar="noleap"
+                    )[: len(so2_start)]
+                    + datetime.timedelta(days=d3)
+                )
+                so2_decay_start = so2_decay_start.assign_coords(
+                    # time=so2_decay_start.time.data - datetime.timedelta(days=d4)
+                    time=xr.cftime_range(
+                        "0500-12", "2010", freq="MS", calendar="noleap"
+                    )[: len(so2_start)]
+                    + datetime.timedelta(days=d4)
+                )
+                so2_start = so2_start.assign_coords(
+                    # time=so2_start.time.data - datetime.timedelta(days=d1)
+                    time=xr.cftime_range(
+                        "0500-08", "2010", freq="MS", calendar="noleap"
+                    )[: len(so2_start)]
+                    + datetime.timedelta(days=d1)
+                )
             case _:
                 volcano_base.never_called(self.freq)
-        so2_rf_peak = so2_start.assign_coords(
-            time=so2_start.time.data + datetime.timedelta(days=d2)
-        )
-        so2_temp_peak = so2_start.assign_coords(
-            time=so2_start.time.data + datetime.timedelta(days=d3)
-        )
-        so2_decay_start = so2_decay_start.assign_coords(
-            time=so2_decay_start.time.data - datetime.timedelta(days=d4)
-        )
-        so2_start = so2_start.assign_coords(
-            time=so2_start.time.data - datetime.timedelta(days=d1)
-        )
 
         # Aligning the arrays takes a long time, so since we know the exact indices we
         # instead slice the arrays to the correct length. Basically zero time versus 15
@@ -607,6 +635,27 @@ class OttoBliesner(BaseModel):
         so2_temp_peak = so2_temp_peak[st_slice]
         rf = rf[rf_slice]
         temp = temp[temp_slice]
+        return so2_decay_start, so2_start, so2_rf_peak, so2_temp_peak, rf, temp
+
+    def _set_aligned_arrays(self) -> None:
+        """Return Otto-Bliesner et al. 2016 SO2, RF and temperature peaks.
+
+        The peaks are best estimates from the full time series.
+        """
+        # Set fluctuations to be positive
+        temp = self.temperature_median.copy()
+        temp.data *= -1
+        rf = self.rf_median.copy()
+        rf.data *= -1
+
+        (
+            so2_decay_start,
+            so2_start,
+            so2_rf_peak,
+            so2_temp_peak,
+            rf,
+            temp,
+        ) = self._force_align(self.so2.copy(), self.so2_delta.copy(), rf, temp)
 
         if not len(so2_start) % 2:
             so2_decay_start = so2_decay_start[:-1]
