@@ -587,12 +587,12 @@ class OttoBliesner(BaseModel):
                     skip_file_prefixes=_warn_skips,
                 )
                 d1, d2, d3, d4 = 15, 15, 15, 15
-                sds_slice = slice(4189, -4)
-                ss_slice = slice(4193, None)
-                sr_slice = slice(4189, -4)
-                st_slice = slice(4184, -9)
-                rf_slice = slice(None, -63)
-                temp_slice = slice(None, -63)
+                sds_slice = slice(4190, -4)
+                ss_slice = slice(4194, None)
+                sr_slice = slice(4189, -5)
+                st_slice = slice(4184, -10)
+                rf_slice = slice(None, -64)
+                temp_slice = slice(None, -64)
                 so2_rf_peak = so2_start.assign_coords(
                     time=xr.cftime_range(
                         "0500-12", "2010", freq="MS", calendar="noleap"
@@ -609,14 +609,14 @@ class OttoBliesner(BaseModel):
                 so2_decay_start = so2_decay_start.assign_coords(
                     # time=so2_decay_start.time.data - datetime.timedelta(days=d4)
                     time=xr.cftime_range(
-                        "0500-12", "2010", freq="MS", calendar="noleap"
+                        "0500-11", "2010", freq="MS", calendar="noleap"
                     )[: len(so2_start)]
                     + datetime.timedelta(days=d4)
                 )
                 so2_start = so2_start.assign_coords(
                     # time=so2_start.time.data - datetime.timedelta(days=d1)
                     time=xr.cftime_range(
-                        "0500-08", "2010", freq="MS", calendar="noleap"
+                        "0500-07", "2010", freq="MS", calendar="noleap"
                     )[: len(so2_start)]
                     + datetime.timedelta(days=d1)
                 )
