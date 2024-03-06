@@ -579,13 +579,6 @@ class OttoBliesner(BaseModel):
                     time=so2_start.time.data - datetime.timedelta(days=d1)
                 )
             case "h0":
-                _warn_skips = (os.path.dirname(__file__),)
-                warnings.warn(  # noqa: B028
-                    "The peak finding is more precise when working with daily data."
-                    " If you are interested in finding peak values of RF and"
-                    " temperature, use daily frequency (`h1`).",
-                    skip_file_prefixes=_warn_skips,
-                )
                 d1, d2, d3, d4 = 15, 15, 15, 15
                 sds_slice = slice(4190, -4)
                 ss_slice = slice(4194, None)
@@ -693,6 +686,14 @@ class OttoBliesner(BaseModel):
         return time_
 
     def _set_peak_arrays(self) -> None:
+        if self.freq == "h0":
+            _warn_skips = (os.path.dirname(__file__),)
+            warnings.warn(  # noqa: B028
+                "The peak finding is more precise when working with daily data."
+                " If you are interested in finding peak values of RF and"
+                " temperature, use daily frequency (`h1`).",
+                skip_file_prefixes=_warn_skips,
+            )
         # Mask out all non-zero SO2 values, and the corresponding RF and temperature
         # values.
         _idx_rf = np.argwhere(self.aligned_arrays["so2-rf"].data > 0)
