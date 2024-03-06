@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.4.0](https://github.com/engeir/volcano-base/compare/v1.3.0...v1.4.0) (2024-03-06)
+
+
+### Features
+
+* **time series:** add weighted_month_mean ([f4a9a94](https://github.com/engeir/volcano-base/commit/f4a9a94b980d5b8c5304460dc6d3800026665614))
+
+
+### Bug Fixes
+
+* **ob16:** incorrectly assigned SO2 RF-aligned to SO2 temp-aligned ([c7587b7](https://github.com/engeir/volcano-base/commit/c7587b7d461f4d008b1f151ee9a6874fbbe04a77))
+* **ob16:** re-align arrays for monthly data ([2913bc1](https://github.com/engeir/volcano-base/commit/2913bc1d9f4f28488fdf7fb34c9565f9c5f92920))
+
+
+### Documentation
+
+* **time_series:** improve docstring for sampling_rate function ([3378404](https://github.com/engeir/volcano-base/commit/33784043f364eac0eb707119ec7929590eda41a4))
+
 ## [1.3.0](https://github.com/engeir/volcano-base/compare/v1.2.1...v1.3.0) (2024-03-05)
 
 
