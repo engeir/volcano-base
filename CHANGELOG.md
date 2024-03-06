@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.4.2](https://github.com/engeir/volcano-base/compare/v1.4.1...v1.4.2) (2024-03-06)
+
+
+### Code Refactoring
+
+* **ob16:** move warning about peak finding to where this is done ([265a922](https://github.com/engeir/volcano-base/commit/265a9228056b2cdf85ffdfbb667ccb6e33d1b58a))
+
+
+### Continuous Integration
+
+* **github:** go back to using release-please-action v3 ([ffd74f2](https://github.com/engeir/volcano-base/commit/ffd74f204d66ab8da225d139b4e5bcc25b760a53))
+
 ## [1.4.1](https://github.com/engeir/volcano-base/compare/v1.4.0...v1.4.1) (2024-03-06)
 
 
