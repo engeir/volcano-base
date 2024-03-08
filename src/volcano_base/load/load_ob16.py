@@ -116,6 +116,19 @@ class OttoBliesner(BaseModel):
         return self._temperature_median
 
     @property
+    def temperature_control_raw(self) -> xr.DataArray:
+        """Return the raw control temperature time series.
+
+        Returns
+        -------
+        xr.DataArray
+            The control temperature time series
+        """
+        if not hasattr(self, "_temperature_control_raw"):
+            self._set_temperature_median()
+        return self._temperature_control_raw
+
+    @property
     def temperature_control(self) -> xr.DataArray:
         """Return the control temperature time series.
 
@@ -486,26 +499,33 @@ class OttoBliesner(BaseModel):
             start=s, periods=len(array.data), calendar="noleap", freq=f1
         ) + datetime.timedelta(days=shift)
         raw_temp = array.assign_coords({"time": t})
-        self._temperature_control = raw_temp
         match self.freq:
             case "h0":
                 month_mean = raw_temp.groupby("time.month").mean("time")
-                raw_temp, arr = xr.align(raw_temp, arr)
-                return (
-                    arr.groupby("time.month")
-                    - month_mean
-                    + volcano_base.config.MEANS["TREFHT"]
+                return self._subtract_climatology(
+                    raw_temp, arr, month_mean, "time.month"
                 )
             case "h1":
                 day_mean = raw_temp.groupby("time.dayofyear").mean()
-                raw_temp, arr = xr.align(raw_temp, arr)
-                return (
-                    arr.groupby("time.dayofyear")
-                    - day_mean
-                    + volcano_base.config.MEANS["TREFHT"]
+                return self._subtract_climatology(
+                    raw_temp, arr, day_mean, "time.dayofyear"
                 )
             case _:
                 volcano_base.never_called(self.freq)
+
+    def _subtract_climatology(
+        self,
+        raw_temp: xr.DataArray,
+        arr: xr.DataArray,
+        climatology: xr.DataArray,
+        groupby: str,
+    ):
+        raw_temp, arr = xr.align(raw_temp, arr)
+        self._temperature_control_raw = raw_temp
+        self._temperature_control = raw_temp.groupby("time.month") - climatology
+        return (arr.groupby(groupby) - climatology) + volcano_base.config.MEANS[
+            "TREFHT"
+        ]
 
     def _set_rf_median(self) -> None:
         """Return Otto-Bliesner et al. 2016 radiative forcing."""
