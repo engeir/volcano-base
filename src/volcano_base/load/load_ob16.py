@@ -23,7 +23,11 @@ class Ob16FileNotFound(FileNotFoundError):
     """Raise an error if one of the Otto-Bliesner et al. (2016) files are not found."""
 
     def __init__(self, *args: object) -> None:
-        self.message = "Cannot find the necessary Otto-Bliesner et al. 2016 files. Please run the `save_to_npz` function within `down.ob16` to see what files are missing."
+        if args:
+            msg = f'Cannot find the file "{args[0]}", which is a nescessary Otto-Blienser et al. (2016) file.'
+        else:
+            msg = "Cannot find the necessary Otto-Bliesner et al. (2016) files."
+        self.message = f"{msg} Please run the `save_to_npz` function within `down.ob16` to see what files are missing."
         super().__init__(self.message)
 
 
@@ -110,6 +114,19 @@ class OttoBliesner(BaseModel):
         if not hasattr(self, "_temperature_median"):
             self._set_temperature_median()
         return self._temperature_median
+
+    @property
+    def temperature_control(self) -> xr.DataArray:
+        """Return the control temperature time series.
+
+        Returns
+        -------
+        xr.DataArray
+            The control temperature time series
+        """
+        if not hasattr(self, "_temperature_control"):
+            self._set_temperature_median()
+        return self._temperature_control
 
     @property
     def temperature_peaks(self) -> np.ndarray:
@@ -338,7 +355,7 @@ class OttoBliesner(BaseModel):
         # with the corresponding time-after-eruption.
         path = volcano_base.config.DATA_PATH / "cesm-lme"
         if not path.exists():
-            raise Ob16FileNotFound()
+            raise Ob16FileNotFound(path.resolve())
         match self.freq:
             case "h1":
                 pattern = re.compile("/([A-Z]+)-00[1-5]\\.npz$", re.X)
@@ -461,16 +478,17 @@ class OttoBliesner(BaseModel):
             / "cesm-lme"
             / f"TREFHT850forcing-control{specifier}-003.npz"
         )
-        if file_name.exists():
-            array = self._load_numpy(file_name.resolve())
-            s = "0850-01-01"
-            t = xr.cftime_range(
-                start=s, periods=len(array.data), calendar="noleap", freq=f1
-            ) + datetime.timedelta(days=shift)
-            raw_temp = array.assign_coords({"time": t})
+        if not file_name.exists():
+            raise Ob16FileNotFound(file_name.resolve())
+        array = self._load_numpy(file_name.resolve())
+        s = "0850-01-01"
+        t = xr.cftime_range(
+            start=s, periods=len(array.data), calendar="noleap", freq=f1
+        ) + datetime.timedelta(days=shift)
+        raw_temp = array.assign_coords({"time": t})
+        self._temperature_control = raw_temp
         match self.freq:
             case "h0":
-                # month_mean = raw_temp.resample(time="MS").mean()
                 month_mean = raw_temp.groupby("time.month").mean("time")
                 raw_temp, arr = xr.align(raw_temp, arr)
                 return (
@@ -559,7 +577,7 @@ class OttoBliesner(BaseModel):
                     time=so2_decay_start.time.data + datetime.timedelta(days=14)
                 )
                 d1, d2, d3, d4 = 180, -31, 44, 58
-                # We hard-code the slices to avoid the long aligning process
+                # We hard-code the slices to avoid the time consuming xr.align process
                 sds_slice = slice(127429, -122)
                 ss_slice = slice(127551, None)
                 sr_slice = slice(127402, -149)
@@ -593,21 +611,18 @@ class OttoBliesner(BaseModel):
                     + datetime.timedelta(days=d2)
                 )
                 so2_temp_peak = so2_start.assign_coords(
-                    # time=so2_start.time.data + datetime.timedelta(days=d3)
                     time=xr.cftime_range(
                         "0501-05", "2010", freq="MS", calendar="noleap"
                     )[: len(so2_start)]
                     + datetime.timedelta(days=d3)
                 )
                 so2_decay_start = so2_decay_start.assign_coords(
-                    # time=so2_decay_start.time.data - datetime.timedelta(days=d4)
                     time=xr.cftime_range(
                         "0500-11", "2010", freq="MS", calendar="noleap"
                     )[: len(so2_start)]
                     + datetime.timedelta(days=d4)
                 )
                 so2_start = so2_start.assign_coords(
-                    # time=so2_start.time.data - datetime.timedelta(days=d1)
                     time=xr.cftime_range(
                         "0500-07", "2010", freq="MS", calendar="noleap"
                     )[: len(so2_start)]
