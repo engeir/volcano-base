@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.4](https://github.com/engeir/volcano-base/compare/v1.4.3...v1.4.4) (2024-03-08)
+
+
+### Bug Fixes
+
+* **ob16:** remove climatology from the control temperature ([fd87b01](https://github.com/engeir/volcano-base/commit/fd87b01deee2ad74db03dd6715d672027d55d0b1))
+
 ## [1.4.3](https://github.com/engeir/volcano-base/compare/v1.4.2...v1.4.3) (2024-03-08)
 
 
