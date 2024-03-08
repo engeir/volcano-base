@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.3](https://github.com/engeir/volcano-base/compare/v1.4.2...v1.4.3) (2024-03-08)
+
+
+### Bug Fixes
+
+* **ob16:** expose the temperature control signal as a class attribute ([d0f6a19](https://github.com/engeir/volcano-base/commit/d0f6a19b8ae03ea24d5a8d624f35940627db02c8))
+
 ## [1.4.2](https://github.com/engeir/volcano-base/compare/v1.4.1...v1.4.2) (2024-03-06)
 
 
