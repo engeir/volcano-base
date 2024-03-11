@@ -170,6 +170,18 @@ class FindFiles:
         else:
             return len(self._matched_files)
 
+    def __repr__(self) -> str:
+        """Return a string representation of the object."""
+        head = f"{self.__class__.__name__}() contains:"
+        files = []
+        match self.get_files():
+            case Success(value):
+                for i in value:
+                    files.append(str(i))
+            case Failure(value):
+                files.append(value)
+        return f"{head}\n\t{"\n\t".join(files)}"
+
     def _initial_file_lookup(self, files, pattern) -> None:
         for file in files:
             if isinstance(search := pattern.search(str(file)), re.Match):
