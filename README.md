@@ -1,6 +1,6 @@
 # Core module for volcanic eruption simulation projects
 
-<sup>Latest version: v1.4.4</sup> <!-- x-release-please-version -->
+<sup>Latest version: v1.5.0</sup> <!-- x-release-please-version -->
 
 > [!WARNING]
 >

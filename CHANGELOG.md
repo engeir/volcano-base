@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.5.0](https://github.com/engeir/volcano-base/compare/v1.4.4...v1.5.0) (2024-03-12)
+
+
+### Features
+
+* **cesm2:** implement functions that download NIRD archive ([35c1955](https://github.com/engeir/volcano-base/commit/35c1955036542fccf4d3d03098c008d5ccd8e689))
+
+
+### Miscellaneous
+
+* **deps:** bump pypa/gh-action-pypi-publish from 1.8.12 to 1.8.14 ([#64](https://github.com/engeir/volcano-base/issues/64)) ([58e3b17](https://github.com/engeir/volcano-base/commit/58e3b17fb324871c73cfc6eb055d14955139e78c))
+* **FindFiles:** add __repr__ ([86b33bf](https://github.com/engeir/volcano-base/commit/86b33bff39b3ba926ff54637536fefa048d93ee3))
+
 ## [1.4.4](https://github.com/engeir/volcano-base/compare/v1.4.3...v1.4.4) (2024-03-08)
 
 
