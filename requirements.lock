@@ -10,6 +10,8 @@
 -e file:.
 annotated-types==0.6.0
     # via pydantic
+beautifulsoup4==4.12.3
+    # via volcano-base
 certifi==2024.2.2
     # via requests
 cftime==1.6.3
@@ -98,6 +100,8 @@ setuptools==69.1.0
     # via zope-interface
 six==1.16.0
     # via python-dateutil
+soupsieve==2.5
+    # via beautifulsoup4
 toolz==0.12.1
     # via dask
     # via partd
