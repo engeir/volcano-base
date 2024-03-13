@@ -173,11 +173,10 @@ class FindFiles:
     def __repr__(self) -> str:
         """Return a string representation of the object."""
         head = f"{self.__class__.__name__}() contains:"
-        files = []
+        files: list[str] = []
         match self.get_files():
             case Success(value):
-                for i in value:
-                    files.append(str(i))
+                files.extend(str(i) for i in value)
             case Failure(value):
                 files.append(value)
         return f"{head}\n\t{"\n\t".join(files)}"
