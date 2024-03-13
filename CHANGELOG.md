@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.1](https://github.com/engeir/volcano-base/compare/v1.5.0...v1.5.1) (2024-03-13)
+
+
+### Bug Fixes
+
+* **ob16:** apply groupby operation from variable, not string ([397fb83](https://github.com/engeir/volcano-base/commit/397fb83cc394119fb33357a9d598463cd959d93f))
+
 ## [1.5.0](https://github.com/engeir/volcano-base/compare/v1.4.4...v1.5.0) (2024-03-12)
 
 
