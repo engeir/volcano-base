@@ -522,7 +522,7 @@ class OttoBliesner(BaseModel):
     ):
         raw_temp, arr = xr.align(raw_temp, arr)
         self._temperature_control_raw = raw_temp
-        self._temperature_control = raw_temp.groupby("time.month") - climatology
+        self._temperature_control = raw_temp.groupby(groupby) - climatology
         return (arr.groupby(groupby) - climatology) + volcano_base.config.MEANS[
             "TREFHT"
         ]
