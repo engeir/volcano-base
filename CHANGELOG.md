@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.6.0](https://github.com/engeir/volcano-base/compare/v1.5.1...v1.6.0) (2024-03-15)
+
+
+### Features
+
+* **time series:** adds approx_align function ([5b82d25](https://github.com/engeir/volcano-base/commit/5b82d25a75f13938f2efc125c24e88b3833be14a))
+
+
+### Code Refactoring
+
+* **load:** loop inside list extend ([3d759f8](https://github.com/engeir/volcano-base/commit/3d759f8ebf4c42bda6db2b2757a6890ebf1e169b))
+
 ## [1.5.1](https://github.com/engeir/volcano-base/compare/v1.5.0...v1.5.1) (2024-03-13)
 
 
