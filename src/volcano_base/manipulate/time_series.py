@@ -47,6 +47,25 @@ def data_array_operation(
     return arrays
 
 
+def approx_align(*a: xr.DataArray) -> tuple[xr.DataArray, ...]:
+    """Align the DataArrays by interpolating them to the same time axis.
+
+    This is useful when you know that the time axes are similar, but not exactly the
+    same values. For example monthly data, but where they differ by a few days.
+
+    Parameters
+    ----------
+    *a : xr.DataArray
+        Any number of xarray DataArrays to align.
+
+    Returns
+    -------
+    tuple[xr.DataArray, ...]
+        The same number of xarray DataArrays, but aligned to the same time axis.
+    """
+    return tuple(value.interp_like(a[0]) for value in a)
+
+
 def shift_arrays(
     arrays: list[xr.DataArray],
     ens: str | None = None,
