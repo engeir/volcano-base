@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.1](https://github.com/engeir/volcano-base/compare/v1.6.0...v1.6.1) (2024-03-15)
+
+
+### Bug Fixes
+
+* **time series:** expose approx_aligned to main module ([27399e1](https://github.com/engeir/volcano-base/commit/27399e14159419838acad1b5d6b143e63bd2d28e))
+
 ## [1.6.0](https://github.com/engeir/volcano-base/compare/v1.5.1...v1.6.0) (2024-03-15)
 
 
