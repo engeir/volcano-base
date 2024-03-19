@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.2](https://github.com/engeir/volcano-base/compare/v1.6.1...v1.6.2) (2024-03-19)
+
+
+### Documentation
+
+* **time series:** refine warning message in `shift_arrays` ([100bcc0](https://github.com/engeir/volcano-base/commit/100bcc07e8c6e21c3080ec37efa92d48fb766a95))
+
 ## [1.6.1](https://github.com/engeir/volcano-base/compare/v1.6.0...v1.6.1) (2024-03-15)
 
 
