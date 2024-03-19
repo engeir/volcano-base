@@ -1,6 +1,8 @@
 """Functions that modify (lists of) xarray DataArrays."""
 
 import datetime
+import os
+import warnings
 from collections import Counter
 from collections.abc import Callable
 from typing import Literal, overload
@@ -130,7 +132,13 @@ def shift_arrays(
                 # From Feb 15 to Feb 15
                 shift = 365 if daily else 12
             case _:
-                print("Don't know how to shift this array.")
+                if custom is None:
+                    _warn_skips = (os.path.dirname(__file__),)
+                    warnings.warn(  # noqa: B028
+                        "I don't know how to shift this array. Using 0 as default. Note"
+                        " that you may set a custom shift with the `custom` keyword.",
+                        skip_file_prefixes=_warn_skips,
+                    )
                 shift = 0
         shift = shift if custom is None else custom_[i]
         if isinstance(arr.time.data[0], float):
