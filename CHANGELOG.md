@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.0](https://github.com/engeir/volcano-base/compare/v1.6.2...v1.7.0) (2024-03-21)
+
+
+### Features
+
+* **down:** add RF control to downloadable datasets (FSNTOA) ([8566ec9](https://github.com/engeir/volcano-base/commit/8566ec955593f19aaf1bd8aac1aa621fee25b57f))
+
 ## [1.6.2](https://github.com/engeir/volcano-base/compare/v1.6.1...v1.6.2) (2024-03-19)
 
 
