@@ -46,6 +46,7 @@ def _save_output_files_to_npz(
     path: pathlib.Path, freq: Literal["h0", "h1"], just_looking: bool
 ) -> None:
     file0 = "b.e11.BLMTRC5CN.f19_g16.VOLC_GRA.00"
+    ctrl_file0 = "b.e11.BLMTRC5CN.f19_g16.850forcing.003"
     match freq:
         case "h0":  # monthly
             file_tup = (
@@ -55,13 +56,14 @@ def _save_output_files_to_npz(
                 ".085001-184912.nc",
                 ".185001-200512.nc",
             )
+            ctrl_file_tup = (
+                path,
+                ctrl_file0,
+                ".cam.h0.",
+                ".085001-184912.nc",
+                ".185001-200512.nc",
+            )
             save_modifier = "-monthly"
-            filename_0 = (
-                "b.e11.BLMTRC5CN.f19_g16.850forcing.003.cam.h0.TREFHT.085001-184912.nc"
-            )
-            filename_1 = (
-                "b.e11.BLMTRC5CN.f19_g16.850forcing.003.cam.h0.TREFHT.185001-200512.nc"
-            )
         case "h1":  # daily
             file_tup = (
                 path,
@@ -70,9 +72,14 @@ def _save_output_files_to_npz(
                 ".08500101-18491231.nc",
                 ".18500101-20051231.nc",
             )
+            ctrl_file_tup = (
+                path,
+                ctrl_file0,
+                ".cam.h1.",
+                ".08500101-18491231.nc",
+                ".18500101-20051231.nc",
+            )
             save_modifier = ""
-            filename_0 = "b.e11.BLMTRC5CN.f19_g16.850forcing.003.cam.h1.TREFHT.08500101-18491231.nc"
-            filename_1 = "b.e11.BLMTRC5CN.f19_g16.850forcing.003.cam.h1.TREFHT.18500101-20051231.nc"
         case _:
             volcano_base.never_called(freq)
     # Temperature.
@@ -80,18 +87,34 @@ def _save_output_files_to_npz(
     # RF forcing
     _download_ensemble("FSNTOA", save_modifier, just_looking, file_tup)
     # Control run for temperature.
+    _download_ctrl_run("TREFHT", save_modifier, just_looking, ctrl_file_tup)
+    # Control run for RF forcing.
+    _download_ctrl_run("FSNTOA", save_modifier, just_looking, ctrl_file_tup)
+
+
+def _download_ctrl_run(
+    variable: Literal["FSNTOA", "TREFHT"],
+    save_modifier,
+    just_looking,
+    file_tup,
+) -> None:
+    path, ctrl_file0, cam, range0, range1 = file_tup
+    ctrl_filename_0 = f"{ctrl_file0}{cam}{variable}{range0}"
+    ctrl_filename_1 = f"{ctrl_file0}{cam}{variable}{range1}"
     match (
-        _look_for_files(path / filename_0, just_looking),
-        _look_for_files(path / filename_1, just_looking),
+        _look_for_files(path / ctrl_filename_0, just_looking),
+        _look_for_files(path / ctrl_filename_1, just_looking),
     ):
         case (Some(file_0), Some(file_1)):
             if not (
-                out_file := (path / f"TREFHT850forcing-control{save_modifier}-003.npz")
+                out_file := (
+                    path / f"{variable}850forcing-control{save_modifier}-003.npz"
+                )
             ).exists():
                 print(f"Saving to {out_file}...")
                 data = xr.open_mfdataset([file_0, file_1])
                 array = volcano_base.manipulate.mean_flatten(
-                    data["TREFHT"], dims=["lat", "lon"]
+                    data[variable], dims=["lat", "lon"]
                 )
                 np.savez(
                     out_file,
@@ -143,10 +166,4 @@ def _download_ensemble(
 
 
 if __name__ == "__main__":
-    # save_to_npz(False)
-    data = xr.open_dataset(
-        "/media/een023/LaCie/een023/cesm/model-runs/cesm-lme/TREFHT850forcing-control-003.nc",
-        chunks="auto",
-    )
-    array = volcano_base.manipulate.mean_flatten(data["TREFHT"], dims=["lat", "lon"])
-    np.savez("TREFHT850forcing-control-003.npz", data=array.data, times=array.time.data)
+    save_to_npz(True)

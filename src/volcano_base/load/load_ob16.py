@@ -103,6 +103,32 @@ class OttoBliesner(BaseModel):
         return self._rf_median
 
     @property
+    def rf_control_raw(self) -> xr.DataArray:
+        """Return the raw control RF time series.
+
+        Returns
+        -------
+        xr.DataArray
+            The control RF time series
+        """
+        if not hasattr(self, "_rf_control_raw"):
+            self._set_rf_median()
+        return self._rf_control_raw
+
+    @property
+    def rf_control(self) -> xr.DataArray:
+        """Return the control RF time series.
+
+        Returns
+        -------
+        xr.DataArray
+            The control RF time series
+        """
+        if not hasattr(self, "_rf_control"):
+            self._set_rf_median()
+        return self._rf_control
+
+    @property
     def temperature_median(self) -> xr.DataArray:
         """Return the median of the temperature time series.
 
@@ -501,47 +527,99 @@ class OttoBliesner(BaseModel):
         raw_temp = array.assign_coords({"time": t})
         match self.freq:
             case "h0":
-                month_mean = raw_temp.groupby("time.month").mean("time")
-                return self._subtract_climatology(
-                    raw_temp, arr, month_mean, "time.month"
+                return (
+                    self._subtract_climatology("TREFHT", raw_temp, arr, "time.month")
+                    + volcano_base.config.MEANS["TREFHT"]
                 )
             case "h1":
-                day_mean = raw_temp.groupby("time.dayofyear").mean()
-                return self._subtract_climatology(
-                    raw_temp, arr, day_mean, "time.dayofyear"
+                return (
+                    self._subtract_climatology(
+                        "TREFHT", raw_temp, arr, "time.dayofyear"
+                    )
+                    + volcano_base.config.MEANS["TREFHT"]
                 )
             case _:
                 volcano_base.never_called(self.freq)
 
     def _subtract_climatology(
         self,
-        raw_temp: xr.DataArray,
+        variable: Literal["TREFHT", "FSNTOA"],
+        raw_arr: xr.DataArray,
         arr: xr.DataArray,
-        climatology: xr.DataArray,
         groupby: str,
     ):
-        raw_temp, arr = xr.align(raw_temp, arr)
-        self._temperature_control_raw = raw_temp
-        self._temperature_control = raw_temp.groupby(groupby) - climatology
-        return (arr.groupby(groupby) - climatology) + volcano_base.config.MEANS[
-            "TREFHT"
-        ]
+        raw_arr, arr = xr.align(raw_arr, arr)
+        climatology_ = raw_arr.groupby(groupby)
+        climatology = (
+            climatology_.mean("time") if "month" in groupby else climatology_.mean()
+        )
+        if variable == "TREFHT":
+            self._temperature_control_raw = raw_arr
+            self._temperature_control = raw_arr.groupby(groupby) - climatology
+        elif variable == "FSNTOA":
+            self._rf_control_raw = raw_arr
+            self._rf_control = raw_arr.groupby(groupby) - climatology
+        return arr.groupby(groupby) - climatology
+
+    def _remove_rf_seasonality_ctrl(self, arr: xr.DataArray) -> xr.DataArray:
+        """Remove seasonality by subtracting CESM LME control run."""
+        match self.freq:
+            case "h0":
+                f1 = "MS"
+                specifier = "-monthly"
+                shift = 15
+            case "h1":
+                f1 = "D"
+                specifier = ""
+                shift = 0
+            case _:
+                volcano_base.never_called(self.freq)
+        file_name = (
+            volcano_base.config.DATA_PATH
+            / "cesm-lme"
+            / f"FSNTOA850forcing-control{specifier}-003.npz"
+        )
+        if not file_name.exists():
+            raise Ob16FileNotFound(file_name.resolve())
+        array = self._load_numpy(file_name.resolve())
+        s = "0850-01-01"
+        t = xr.cftime_range(
+            start=s, periods=len(array.data), calendar="noleap", freq=f1
+        ) + datetime.timedelta(days=shift)
+        raw_rf = array.assign_coords({"time": t})
+        match self.freq:
+            case "h0":
+                return self._subtract_climatology("FSNTOA", raw_rf, arr, "time.month")
+            case "h1":
+                return self._subtract_climatology(
+                    "FSNTOA", raw_rf, arr, "time.dayofyear"
+                )
+            case _:
+                volcano_base.never_called(self.freq)
+
+    def _remove_rf_seasonality(self, rf: xr.DataArray) -> xr.DataArray:
+        strategy_ctrl = True
+        if not strategy_ctrl:
+            # Remove noise in Fourier domain (seasonal and 6-month cycles)
+            match self.freq:
+                case "h0":
+                    f1 = 1.014
+                case "h1":
+                    f1 = 1
+                case _:
+                    volcano_base.never_called(self.freq)
+            rf = volcano_base.manipulate.remove_seasonality([rf.copy()], freq=f1)[0]
+            rf = volcano_base.manipulate.remove_seasonality([rf], freq=f1 * 2)[0]
+        else:
+            rf = self._remove_rf_seasonality_ctrl(rf)
+        return rf
 
     def _set_rf_median(self) -> None:
         """Return Otto-Bliesner et al. 2016 radiative forcing."""
         rf = volcano_base.manipulate.get_median(
             list(self.rf_ensemble).copy(), xarray=True
         )
-        # Remove noise in Fourier domain (seasonal and 6-month cycles)
-        match self.freq:
-            case "h0":
-                f1 = 1.014
-            case "h1":
-                f1 = 1
-            case _:
-                volcano_base.never_called(self.freq)
-        rf = volcano_base.manipulate.remove_seasonality([rf.copy()], freq=f1)[0]
-        rf = volcano_base.manipulate.remove_seasonality([rf], freq=f1 * 2)[0]
+        rf = self._remove_rf_seasonality(rf)
         # Subtract the mean
         rf.data -= rf.data.mean()
         self._rf_median = rf

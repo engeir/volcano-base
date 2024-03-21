@@ -19,14 +19,14 @@ repos:
         name: ruff_format
         stages: [commit]
         language: system
-        entry: rye run ruff format --force-exclude src # tests
+        entry: rye fmt
         types: [python]
 
-      - id: ruff
-        name: ruff
+      - id: ruff_check
+        name: ruff_check
         stages: [commit]
         language: system
-        entry: rye run ruff --fix --force-exclude src # tests
+        entry: rye lint
         types: [python]
 
       - id: xdoctest
