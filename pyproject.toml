@@ -1,6 +1,6 @@
 [project]
 name = "volcano-base"
-version = "1.7.0"
+version = "1.8.0"
 description = "Download, find and manipulate volcano and climate related time series"
 authors = [{ name = "engeir", email = "engeir@pm.me" }]
 license = "MIT"

@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.8.0](https://github.com/engeir/volcano-base/compare/v1.7.0...v1.8.0) (2024-03-22)
+
+
+### Features
+
+* **time series:** add subtract_climatology function ([5a70b59](https://github.com/engeir/volcano-base/commit/5a70b59b3f4b234fc48b94c73b70955e74a71563))
+
+
+### Miscellaneous
+
+* **docs:** fix docstrings in subtract_climatology ([7e689e6](https://github.com/engeir/volcano-base/commit/7e689e6091231d71d728e157530d6df7c6a171d7))
+
 ## [1.7.0](https://github.com/engeir/volcano-base/compare/v1.6.2...v1.7.0) (2024-03-21)
 
 
