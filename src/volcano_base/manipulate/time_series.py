@@ -159,13 +159,13 @@ def _latitude_mean(arr: xr.DataArray, lat: str) -> xr.DataArray:
 @overload
 def mean_flatten(
     arrays: list[xr.DataArray], dims: list[str] | None = None
-) -> list[xr.DataArray]:
-    ...
+) -> list[xr.DataArray]: ...
 
 
 @overload
-def mean_flatten(arrays: xr.DataArray, dims: list[str] | None = None) -> xr.DataArray:
-    ...
+def mean_flatten(
+    arrays: xr.DataArray, dims: list[str] | None = None
+) -> xr.DataArray: ...
 
 
 def mean_flatten(
@@ -229,8 +229,7 @@ def remove_seasonality(
     freq: float = 1.0,
     radius: float = 0.01,
     plot: bool = False,
-) -> list[xr.DataArray]:
-    ...
+) -> list[xr.DataArray]: ...
 
 
 @overload
@@ -239,8 +238,7 @@ def remove_seasonality(
     freq: float = 1.0,
     radius: float = 0.01,
     plot: bool = False,
-) -> xr.DataArray:
-    ...
+) -> xr.DataArray: ...
 
 
 def remove_seasonality(
@@ -348,6 +346,65 @@ def _remove_seasonality_fourier(
     return arr[:]
 
 
+def subtract_climatology(
+    arr: xr.DataArray,
+    clim_arr: xr.DataArray,
+    groupby: Literal["time.dayofyear", "time.month"],
+) -> tuple[xr.DataArray, xr.DataArray, xr.DataArray]:
+    """Subtract the climatological mean.
+
+    Parameters
+    ----------
+    arr : xr.DataArray
+        The data array to subtract the climatology from.
+    clim_arr : xr.DataArray
+        The climatology data array to take the climatology from.
+    groupby : Literal["time.dayofyear", "time.month"]
+        The groupby string to use when grouping the data. At the moment, only daily and
+        monthly resolved data is supported.
+
+    Returns
+    -------
+    xr.DataArray
+        The corrected data array with the climatology subtracted.
+    xr.DataArray
+        The raw data array with the climatology subtracted.
+    xr.DataArray
+        The climatology data array, aligned with the two other arrays.
+
+    Examples
+    --------
+    Let us say you have many arrays that you want to subtract the climatology from. You
+    may then want to combine this function with `data_array_operation`. However,
+    `data_array_operation` expects a function that takes a single array as input and
+    returns the same array with the operation performed. We therefore need to wrap the
+    `subtract_climatology` function in a function.
+
+    >>> t = xr.cftime_range(
+    ...     start="1850-01-01",
+    ...     periods=100,
+    ...     calendar="noleap",
+    ...     freq="MS",
+    ... )
+    >>> clim_arr = xr.DataArray(np.arange(100), dims=["time"], coords={"time": t})
+    >>> def single_array_sub_clim(arr: xr.DataArray) -> xr.DataArray:
+    ...     return subtract_climatology(arr, clim_arr, "time.month")[0]
+    >>> data_array_operation(
+    ...    [clim_arr, clim_arr], single_array_sub_clim
+    ... )
+    """
+    clim_arr, arr = xr.align(clim_arr, arr)
+    climatology_ = clim_arr.groupby(groupby)
+    climatology = (
+        climatology_.mean("time") if "month" in groupby else climatology_.mean()
+    )
+    return (
+        arr.groupby(groupby) - climatology,
+        clim_arr.groupby(groupby) - climatology,
+        clim_arr,
+    )
+
+
 def dt2float(
     arr: np.ndarray | xr.CFTimeIndex, days_in_year: int = 365
 ) -> xr.CFTimeIndex:
@@ -400,15 +457,13 @@ def float2dt(arr: xr.CFTimeIndex | np.ndarray, freq: str = "D") -> xr.CFTimeInde
 
 
 @overload
-def get_median(arrays: list[xr.DataArray], xarray: Literal[True]) -> xr.DataArray:
-    ...
+def get_median(arrays: list[xr.DataArray], xarray: Literal[True]) -> xr.DataArray: ...
 
 
 @overload
 def get_median(
     arrays: list[xr.DataArray], xarray: Literal[False]
-) -> tuple[np.ndarray, np.ndarray]:
-    ...
+) -> tuple[np.ndarray, np.ndarray]: ...
 
 
 def get_median(
@@ -449,13 +504,13 @@ def get_median(
 
 
 @overload
-def keep_whole_years(arrays: list[xr.DataArray], freq: str = "D") -> list[xr.DataArray]:
-    ...
+def keep_whole_years(
+    arrays: list[xr.DataArray], freq: str = "D"
+) -> list[xr.DataArray]: ...
 
 
 @overload
-def keep_whole_years(arrays: xr.DataArray, freq: str = "D") -> xr.DataArray:
-    ...
+def keep_whole_years(arrays: xr.DataArray, freq: str = "D") -> xr.DataArray: ...
 
 
 def keep_whole_years(
