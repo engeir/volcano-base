@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.8.1](https://github.com/engeir/volcano-base/compare/v1.8.0...v1.8.1) (2024-03-22)
+
+
+### Bug Fixes
+
+* **time series:** expose subtract_climatology to the manipulate module ([1d48f98](https://github.com/engeir/volcano-base/commit/1d48f98ae91677221ce576c63d834414627041f8))
+
 ## [1.8.0](https://github.com/engeir/volcano-base/compare/v1.7.0...v1.8.0) (2024-03-22)
 
 
