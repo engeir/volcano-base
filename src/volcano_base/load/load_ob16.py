@@ -546,8 +546,26 @@ class OttoBliesner(BaseModel):
         variable: Literal["TREFHT", "FSNTOA"],
         raw_arr: xr.DataArray,
         arr: xr.DataArray,
-        groupby: str,
-    ):
+        groupby: Literal["time.dayofyear", "time.month"],
+    ) -> xr.DataArray:
+        """Subtract the climatological mean.
+
+        Parameters
+        ----------
+        variable : Literal["TREFHT", "FSNTOA"]
+            The variable to subtract the climatology from.
+        raw_arr : xr.DataArray
+            The raw data array to take the climatology from.
+        arr : xr.DataArray
+            The data array to subtract the climatology from.
+        groupby : Literal["time.dayofyear", "time.month"]
+            The groupby string to use when grouping the data.
+
+        Returns
+        -------
+        xr.DataArray
+            The data array with the climatology subtracted.
+        """
         raw_arr, arr = xr.align(raw_arr, arr)
         climatology_ = raw_arr.groupby(groupby)
         climatology = (

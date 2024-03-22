@@ -389,9 +389,7 @@ def subtract_climatology(
     >>> clim_arr = xr.DataArray(np.arange(100), dims=["time"], coords={"time": t})
     >>> def single_array_sub_clim(arr: xr.DataArray) -> xr.DataArray:
     ...     return subtract_climatology(arr, clim_arr, "time.month")[0]
-    >>> data_array_operation(
-    ...    [clim_arr, clim_arr], single_array_sub_clim
-    ... )
+    >>> data_array_operation([clim_arr, clim_arr], single_array_sub_clim)
     """
     clim_arr, arr = xr.align(clim_arr, arr)
     climatology_ = clim_arr.groupby(groupby)
