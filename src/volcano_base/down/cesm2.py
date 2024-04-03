@@ -59,7 +59,7 @@ def _save_cesm_files(path: pathlib.Path) -> None:
             f" and can be downloaded manually from {_URL}."
         )
     if not path.exists():
-        path.mkdir(parents=True)
+        path.mkdir(parents=False)
     for file in _find_files():
         # Input file with injected SO2.
         _download_cesm_file(path, file)
