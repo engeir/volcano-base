@@ -41,11 +41,8 @@ def _find_files() -> list[str]:
     return files
 
 
-def save_cesm_files(path: pathlib.Path) -> None:
+def _save_cesm_files(path: pathlib.Path) -> None:
     """Save the CESM2 NIRD archive files to disk.
-
-    This function is used by functions inside the `volcano_base.load` module, and should
-    not be needed to be called by the user.
 
     Parameters
     ----------
@@ -53,16 +50,16 @@ def save_cesm_files(path: pathlib.Path) -> None:
         Path to the file to download.
     """
     urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-    if not path.exists():
-        path.mkdir(parents=False)
     answer = input(
-        f"Is it ok that I download all CESM2 NIRD archive files to {path.resolve()}? [y/N] "
+        f"Is it ok that I create the directory and download all CESM2 NIRD archive files to {path.resolve()}? [y/N] "
     ).lower()
     if answer not in ["y", "yes"]:
         sys.exit(
             "Ok, I will not download anything. The files are needed to run the script,"
             f" and can be downloaded manually from {_URL}."
         )
+    if not path.exists():
+        path.mkdir(parents=True)
     for file in _find_files():
         # Input file with injected SO2.
         _download_cesm_file(path, file)
@@ -100,7 +97,6 @@ def _download_cesm_file(path: pathlib.Path, file_name: str) -> None:
             with open(file, "wb") as f:
                 for chunk in progress.track(
                     r.iter_content(chunk_size=chunk_size),
-                    # total=20851,
                     total=total,
                     description=f"[cyan]Downloading {file_name}",
                 ):
@@ -110,10 +106,11 @@ def _download_cesm_file(path: pathlib.Path, file_name: str) -> None:
                     f.write(chunk)
 
 
-def _main() -> None:
+def save_cesm_files() -> None:
+    """Save the CESM2 NIRD archive files to disk."""
     path: pathlib.Path = volcano_base.config.DATA_PATH / "nird-archive"
-    save_cesm_files(path)
+    _save_cesm_files(path)
 
 
 if __name__ == "__main__":
-    _main()
+    save_cesm_files()

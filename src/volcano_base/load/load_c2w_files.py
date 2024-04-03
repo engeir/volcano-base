@@ -14,6 +14,18 @@ from xarray.core.types import T_Xarray
 import volcano_base
 
 
+class CESM2FileNotFound(FileNotFoundError):
+    """Raise an error if one of the CESM2 files are not found."""
+
+    def __init__(self, *args: object) -> None:
+        if args:
+            msg = f'Cannot find the file "{args[0]}", which is a nescessary CESM2 file.'
+        else:
+            msg = "Cannot find the necessary CESM2 files."
+        self.message = f"{msg} Please run the `save_cesm_files` function within `down.cesm2` to see what files are missing."
+        super().__init__(self.message)
+
+
 class FindFiles:
     """Find files that match a pre-defined regular expression.
 
@@ -38,7 +50,7 @@ class FindFiles:
 
     Raises
     ------
-    ConnectionError
+    CESM2FileNotFound
         If the files cannot be found the hard disk might not be mounted
 
     Examples
@@ -145,10 +157,7 @@ class FindFiles:
         pattern = re.compile(regex + self.ft, re.X)
         self.root_path = pathlib.Path(volcano_base.config.DATA_PATH)
         if not self.root_path.exists():
-            raise ConnectionError(
-                "The file path could not be found. Are you sure the harddisk is"
-                " connected?"
-            )
+            raise CESM2FileNotFound()
         files = self.root_path.rglob(f"**/*{self.ft}")
         self._initial_file_lookup(files, pattern)
         self._matched_files: list[tuple[str, str, str, str, str, str]] | None = None
