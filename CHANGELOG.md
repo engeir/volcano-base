@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.8.3](https://github.com/engeir/volcano-base/compare/v1.8.2...v1.8.3) (2024-04-03)
+
+
+### Miscellaneous
+
+* **cesm2 load:** do not create parent directories ([5e59dcd](https://github.com/engeir/volcano-base/commit/5e59dcdd78b069f70c525de05d1883f6f05baa09))
+
 ## [1.8.2](https://github.com/engeir/volcano-base/compare/v1.8.1...v1.8.2) (2024-04-03)
 
 
