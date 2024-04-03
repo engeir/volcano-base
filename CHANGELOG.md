@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.8.2](https://github.com/engeir/volcano-base/compare/v1.8.1...v1.8.2) (2024-04-03)
+
+
+### Code Refactoring
+
+* **cesm2 load:** better error message that hints to where files can be dowloaded ([404c952](https://github.com/engeir/volcano-base/commit/404c9521f58e57df48f3c8b32bcfb0ba17fa7ffb))
+
 ## [1.8.1](https://github.com/engeir/volcano-base/compare/v1.8.0...v1.8.1) (2024-03-22)
 
 
