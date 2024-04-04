@@ -18,11 +18,13 @@ class CESM2FileNotFound(FileNotFoundError):
     """Raise an error if one of the CESM2 files are not found."""
 
     def __init__(self, *args: object) -> None:
-        if args:
-            msg = f'Cannot find the file "{args[0]}", which is a nescessary CESM2 file.'
-        else:
-            msg = "Cannot find the necessary CESM2 files."
-        self.message = f"{msg} Please run the `save_cesm_files` function within `down.cesm2` to see what files are missing."
+        file = volcano_base.config.DATA_PATH
+        msg = (
+            f'Cannot find the file "{args[0]}", which is a nescessary CESM2 file.'
+            if args
+            else "Cannot find the necessary CESM2 files."
+        )
+        self.message = f"{msg} I went looking in {file.resolve()}. Please run the `save_cesm_files` function within `down.cesm2` to see what files are missing."
         super().__init__(self.message)
 
 
