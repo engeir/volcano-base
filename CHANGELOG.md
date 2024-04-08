@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.8.4](https://github.com/engeir/volcano-base/compare/v1.8.3...v1.8.4) (2024-04-08)
+
+
+### Bug Fixes
+
+* **ob16:** scale colum SO2 so unit adjusts from kg/m2 to Tg (per Earth surface) ([7c82515](https://github.com/engeir/volcano-base/commit/7c8251584e8787d18bc964ead685e86efc5a3ef8))
+
+
+### Miscellaneous
+
+* **cesm2 load:** print path of where we look for files ([7e57d94](https://github.com/engeir/volcano-base/commit/7e57d947eb01b3367a7062b78f954a798be1c238))
+
 ## [1.8.3](https://github.com/engeir/volcano-base/compare/v1.8.2...v1.8.3) (2024-04-03)
 
 
