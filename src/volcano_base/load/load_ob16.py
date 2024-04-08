@@ -267,7 +267,7 @@ class OttoBliesner(BaseModel):
         avgs_list = volcano_base.manipulate.mean_flatten([ds.colmass], dims=["lat"])
         avgs = avgs_list[0]
         # Scale so that the unit is now in Tg(SO2) (Otto-Bliesner et al. (2016)).
-        avgs = avgs / avgs.max() * 257.9 / 3 * 2
+        avgs *= 510e3  # From kg/m2 to Tg/Earth surface
         f_time = avgs.time.data
         f_time = f_time - f_time[0] + 501
         avgs = avgs.assign_coords(
