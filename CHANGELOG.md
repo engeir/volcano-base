@@ -1,5 +1,16 @@
 # Changelog
 
+## [2.0.0](https://github.com/engeir/volcano-base/compare/v1.8.4...v2.0.0) (2024-04-09)
+
+
+### ⚠ BREAKING CHANGES
+
+* **cesm load:** use a regex class object to specify files to find
+
+### Features
+
+* **cesm load:** use a regex class object to specify files to find ([793c0a9](https://github.com/engeir/volcano-base/commit/793c0a90b8536eb8b299c12ad0bf692f633d51e7))
+
 ## [1.8.4](https://github.com/engeir/volcano-base/compare/v1.8.3...v1.8.4) (2024-04-08)
 
 
