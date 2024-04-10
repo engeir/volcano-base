@@ -53,7 +53,7 @@ def _save_cesm_files(path: pathlib.Path) -> None:
     answer = input(
         f"Is it ok that I create the directory and download all CESM2 NIRD archive files to {path.resolve()}? [y/N] "
     ).lower()
-    if answer not in ["y", "yes"]:
+    if answer not in {"y", "yes"}:
         sys.exit(
             "Ok, I will not download anything. The files are needed to run the script,"
             f" and can be downloaded manually from {_URL}."

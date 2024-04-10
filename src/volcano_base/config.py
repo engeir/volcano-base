@@ -22,7 +22,7 @@ def ask_then_create(file_path: pathlib.Path) -> None:
         return
     # Ask user if it is ok to create config file here.
     ans = input(f"Is it okay to create {file_path.resolve()}? [y/N] ").lower()
-    if ans in ["y", "yes"]:
+    if ans in {"y", "yes"}:
         file_path.mkdir(parents=True)
     else:
         print("Okay, I will not create anything.")
@@ -36,9 +36,9 @@ def create_config() -> Result[pathlib.Path, str]:
     _cfg = here / "volcano-base.toml"
     if not _cfg.exists():
         ans = input(f"Is it okay to create {_cfg.resolve()}? [y/N] ").lower()
-        if ans not in ["y", "yes"]:
+        if ans not in {"y", "yes"}:
             return Failure("No config file exists.")
-        with open(_cfg.resolve(), mode="w") as cfg:
+        with open(_cfg.resolve(), mode="w", encoding="locale") as cfg:
             _config_content(cfg, here, _data, _save)
     return Success(_cfg)
 

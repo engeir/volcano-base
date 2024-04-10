@@ -461,8 +461,9 @@ class OttoBliesner(BaseModel):
             raise Ob16FileNotFound()
         return arrs[0], arrs[1], arrs[2], arrs[3], arrs[4]
 
+    @staticmethod
     def _load_nc(
-        self, files_: list[pathlib.Path], pattern: re.Pattern, search_group: str
+        files_: list[pathlib.Path], pattern: re.Pattern, search_group: str
     ) -> tuple[xr.DataArray, xr.DataArray, xr.DataArray, xr.DataArray, xr.DataArray]:
         arrs: list[xr.DataArray] = []
         for file in files_:
@@ -694,12 +695,14 @@ class OttoBliesner(BaseModel):
                 )
                 d1, d2, d3, d4 = 180, -31, 44, 58
                 # We hard-code the slices to avoid the time consuming xr.align process
-                sds_slice = slice(127429, -122)
-                ss_slice = slice(127551, None)
-                sr_slice = slice(127402, -149)
-                st_slice = slice(127327, -224)
-                rf_slice = slice(0, -1929)
-                temp_slice = slice(0, -1929)
+                slices = (
+                    slice(127429, -122),  # sds_slice
+                    slice(127551, None),  # ss_slice
+                    slice(127402, -149),  # sr_slice
+                    slice(127327, -224),  # st_slice
+                    slice(0, -1929),  # rf_slice
+                    slice(0, -1929),  # temp_slice
+                )
                 so2_rf_peak = so2_start.assign_coords(
                     time=so2_start.time.data + datetime.timedelta(days=d2)
                 )
@@ -714,12 +717,14 @@ class OttoBliesner(BaseModel):
                 )
             case "h0":
                 d1, d2, d3, d4 = 15, 15, 15, 15
-                sds_slice = slice(4190, -4)
-                ss_slice = slice(4194, None)
-                sr_slice = slice(4189, -5)
-                st_slice = slice(4184, -10)
-                rf_slice = slice(None, -64)
-                temp_slice = slice(None, -64)
+                slices = (
+                    slice(4190, -4),  # sds_slice
+                    slice(4194, None),  # ss_slice
+                    slice(4189, -5),  # sr_slice
+                    slice(4184, -10),  # st_slice
+                    slice(None, -64),  # rf_slice
+                    slice(None, -64),  # temp_slice
+                )
                 so2_rf_peak = so2_start.assign_coords(
                     time=xr.cftime_range(
                         "0500-12", "2010", freq="MS", calendar="noleap"
@@ -753,12 +758,12 @@ class OttoBliesner(BaseModel):
         # so2_decay_start, so2_start, so2_rf_peak, so2_temp_peak, rf, temp = xr.align(
         #     so2_decay_start, so2_start, so2_rf_peak, so2_temp_peak, rf, temp
         # )
-        so2_decay_start = so2_decay_start[sds_slice]
-        so2_start = so2_start[ss_slice]
-        so2_rf_peak = so2_rf_peak[sr_slice]
-        so2_temp_peak = so2_temp_peak[st_slice]
-        rf = rf[rf_slice]
-        temp = temp[temp_slice]
+        so2_decay_start = so2_decay_start[slices[0]]
+        so2_start = so2_start[slices[1]]
+        so2_rf_peak = so2_rf_peak[slices[2]]
+        so2_temp_peak = so2_temp_peak[slices[3]]
+        rf = rf[slices[4]]
+        temp = temp[slices[5]]
         return so2_decay_start, so2_start, so2_rf_peak, so2_temp_peak, rf, temp
 
     def _set_aligned_arrays(self) -> None:

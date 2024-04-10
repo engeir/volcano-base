@@ -47,7 +47,7 @@ def _download_so2_file(file: pathlib.Path) -> None:
     answer = input(
         f"Is it ok that I download {file.name} to {file.parent}? [y/N] "
     ).lower()
-    if answer not in ["y", "yes"]:
+    if answer not in {"y", "yes"}:
         sys.exit(
             "Ok, I will not download anything. The file is needed to run the script,"
             f" and can be downloaded manually from {url}."
