@@ -42,7 +42,9 @@ def data_array_operation(
     ...     arr_ = arr[-120:]
     ...     arr.data = arr.data - arr_.mean().data
     ...     return arr
-    >>> data_array_operation([xr.DataArray([1, 2, 3]), xr.DataArray([4, 5, 6])], single_array_sub_tail)
+    >>> data_array_operation(
+    ...     [xr.DataArray([1, 2, 3]), xr.DataArray([4, 5, 6])], single_array_sub_tail
+    ... )
     """
     for i, arr in enumerate(arrays):
         arrays[i] = operation(arr)
@@ -752,12 +754,10 @@ def sampling_rate(dates: np.ndarray) -> float:
             return np.mean(np.diff(dates))
         case datetime.datetime():
             return np.mean(
-                np.diff(
-                    [
-                        eval(datetime.datetime.strftime(i, "%Y+%-m/12+%-d/365"))
-                        for i in dates
-                    ]
-                )
+                np.diff([
+                    eval(datetime.datetime.strftime(i, "%Y+%-m/12+%-d/365"))
+                    for i in dates
+                ])
             )
         case cftime._cftime.DatetimeNoLeap():
             cftime2float_ = dt2float(dates)

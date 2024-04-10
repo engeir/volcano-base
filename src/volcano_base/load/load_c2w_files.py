@@ -204,9 +204,7 @@ class FindFiles:
 
     You find nothing since the date is wrong.
 
-    >>> files = ff.find(
-    ...     "h0", "e_BWma1850", "strong", "U", "ens1", "2x230828"
-    ... )
+    >>> files = ff.find("h0", "e_BWma1850", "strong", "U", "ens1", "2x230828")
     Traceback (most recent call last):
     ...
     AttributeError: ...
@@ -214,9 +212,7 @@ class FindFiles:
 
     You still find nothing since there are two specifications of ensembles.
 
-    >>> files = ff.find(
-    ...     "h0", "e_BWma1850", "strong", "U", "ens1", "ens2"
-    ... )
+    >>> files = ff.find("h0", "e_BWma1850", "strong", "U", "ens1", "ens2")
     Traceback (most recent call last):
     ...
     AttributeError: ...
@@ -239,10 +235,10 @@ class FindFiles:
     Keep h0, e_BWma1850 or e_fSST1850, FLNT or TREFHT or AODVISstdn and ens1 or ens2.
 
     >>> matches = matches.keep(
-    ...    "h0",
-    ...    ("e_BWma1850", "e_fSST1850"),
-    ...    ["FLNT", "TREFHT", "AODVISstdn"],
-    ...    {"ens1", "ens2"},
+    ...     "h0",
+    ...     ("e_BWma1850", "e_fSST1850"),
+    ...     ["FLNT", "TREFHT", "AODVISstdn"],
+    ...     {"ens1", "ens2"},
     ... )
     >>> # matches.print_files()
     >>> # print(len(matches))
