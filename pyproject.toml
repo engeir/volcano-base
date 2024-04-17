@@ -38,7 +38,7 @@ dev-dependencies = [
   "pre-commit-hooks>=4.5.0",
   "mypy>=1.8.0",
   "types-requests>=2.31.0.20240125",
-  "ruff>=0.2.1",
+  "ruff>=0.3.7",
   "nc-time-axis>=1.4.1",
   "pyqt5>=5.15.10",
 ]
