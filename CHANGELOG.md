@@ -1,5 +1,25 @@
 # Changelog
 
+## [2.0.1](https://github.com/engeir/volcano-base/compare/v2.0.0...v2.0.1) (2024-04-19)
+
+
+### Bug Fixes
+
+* **manipulate:** get_median accepts arbitrary dimensions provided one is time ([9197a72](https://github.com/engeir/volcano-base/commit/9197a7276d4f3423dcace0fdb434d76f39f57162))
+* **manipulate:** mean_flatten should copy the dims list input parameter ([9623f4a](https://github.com/engeir/volcano-base/commit/9623f4a9fa54b0743da80e2f4b5556aa83fdf6a4))
+
+
+### Styles
+
+* **ruff lint:** add preview mode ([131d843](https://github.com/engeir/volcano-base/commit/131d843930460790b98b4de9499fa0e7884bc755))
+* **ruff:** fix lint errors enforced by preview mode ([861a151](https://github.com/engeir/volcano-base/commit/861a151d98c4a7043891bc828e8caa6511697088))
+
+
+### Build System
+
+* **deps-dev:** bump ruff from 0.2.1 to 0.3.7 ([3d3ebf8](https://github.com/engeir/volcano-base/commit/3d3ebf86ce0cdcfaa8d1f51cf5559a642a17ca83))
+* **deps:** update all dependencies ([86a32f9](https://github.com/engeir/volcano-base/commit/86a32f9cd68790e9e5779a133212b6ee3c7df470))
+
 ## [2.0.0](https://github.com/engeir/volcano-base/compare/v1.8.4...v2.0.0) (2024-04-09)
 
 
