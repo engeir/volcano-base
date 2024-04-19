@@ -490,7 +490,8 @@ def get_median(
     """
     array = arrays[:]
     x_ax = array[0].time
-    y_ax = np.zeros((len(array), len(array[0].data)))
+    shape = (len(array),) + array[0].data.shape
+    y_ax = np.zeros(shape)
     for i, arr in enumerate(array):
         y_ax[i, :] = arr[:].data
     if xarray:
