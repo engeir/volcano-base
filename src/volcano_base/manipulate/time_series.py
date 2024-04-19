@@ -192,12 +192,11 @@ def mean_flatten(
     list[xr.DataArray] | xr.DataArray
         A list of averaged xarray Data Arrays.
     """
-    if dims is None:
-        dims = ["lon", "time"]
+    dims_ = ["lon", "time"] if dims is None else dims[:]
     try:
         # If latitude is included, it has to be treated with care to make up for
         # changes in grid cells.
-        dims.remove(lat)
+        dims_.remove(lat)
     except ValueError:
         include_lat = False
     else:
@@ -207,7 +206,7 @@ def mean_flatten(
             tmp = _latitude_mean(arrays, lat)
             arrays = tmp.assign_attrs(arrays.attrs)
             tmp.close()
-        arrays = arrays.mean(dim=dims)
+        arrays = arrays.mean(dim=dims_)
         arrays = arrays.assign_attrs(arrays.attrs)
         return arrays
     array = arrays[:]
@@ -218,7 +217,7 @@ def mean_flatten(
             tmp.close()
         else:
             arr_ = arr
-        array[i] = arr_.mean(dim=dims)
+        array[i] = arr_.mean(dim=dims_)
         array[i] = array[i].assign_attrs(arr_.attrs)
         arr.close()
         arr_.close()
