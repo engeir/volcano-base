@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.2](https://github.com/engeir/volcano-base/compare/v2.0.1...v2.0.2) (2024-04-19)
+
+
+### Bug Fixes
+
+* **cesm2 load:** use match group 'ensemble', since this matches with the data attrs ([51579ff](https://github.com/engeir/volcano-base/commit/51579ff59ea0733ed6ef3c8aab3e6210812afde4))
+
 ## [2.0.1](https://github.com/engeir/volcano-base/compare/v2.0.0...v2.0.1) (2024-04-19)
 
 
