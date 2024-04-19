@@ -117,7 +117,12 @@ def shift_arrays(
                 )
             custom_ = custom
     for i, arr in enumerate(array):
-        case_0 = arr.attrs["ensemble"] if ens is None else ens
+        if "ensemble" in arr.attrs and ens is None:
+            case_0 = arr.attrs["ensemble"]
+        elif "ens" in arr.attrs and ens is None:
+            case_0 = arr.attrs["ens"]
+        else:
+            case_0 = ens
         match case_0:
             case "ens1":
                 shift = 0

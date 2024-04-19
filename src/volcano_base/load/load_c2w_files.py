@@ -134,7 +134,7 @@ def default_regex() -> RegexLookup:
         (\d{8})"""
     group_names = {
         "Compsets": "compset",
-        "Ensembles": "ens",
+        "Ensembles": "ensemble",
         "Simulations": "sim",
         "Attributes": "attr",
         "Frequencies": "freq",
@@ -143,7 +143,7 @@ def default_regex() -> RegexLookup:
     reverse_search = (
         pathlib.Path("ensemble-simulations")
         / "<compset>"
-        / "<compset>-<ens>-<sim>"
+        / "<compset>-<ensemble>-<sim>"
         / "aggregate"
         / "<attr>-<freq>-<date><ft>"
     )
@@ -171,14 +171,14 @@ def nird_archive_regex() -> RegexLookup:
         "Compsets": "compset",
         "Latutude": "latitude",
         "Simulations": "sim",
-        "Ensembles": "ens",
+        "Ensembles": "ensemble",
         "Attributes": "attr",
         "Frequencies": "freq",
         "Dates": "date",
     }
     reverse_search = (
         pathlib.Path("nird-archive")
-        / "<compset>-<latitude>-<sim>-<ens>-<attr>-<freq>-<date><ft>"
+        / "<compset>-<latitude>-<sim>-<ensemble>-<attr>-<freq>-<date><ft>"
     )
     return RegexLookup(".nc", group_names, reverse_search, regex)
 
