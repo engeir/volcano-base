@@ -26,7 +26,7 @@ contourpy==1.2.1
     # via matplotlib
 cycler==0.12.1
     # via matplotlib
-dask==2024.4.1
+dask==2024.4.2
     # via volcano-base
 datetime==5.5
     # via volcano-base
@@ -70,9 +70,9 @@ partd==1.4.1
     # via dask
 pillow==10.3.0
     # via matplotlib
-pydantic==2.7.0
+pydantic==2.7.1
     # via volcano-base
-pydantic-core==2.18.1
+pydantic-core==2.18.2
     # via pydantic
 pygments==2.17.2
     # via rich
