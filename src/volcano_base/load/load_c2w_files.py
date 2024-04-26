@@ -553,17 +553,22 @@ class FindFiles:
             return self
         sorting = self._sort_order
         reverse = self._sort_reverse
-        self = self.sort("date", reverse=True)
-        only_recent = []
-        last_file = ("",) * len(self.regex.groups)
-        if self._matched_files is None:
+        local_self = self.sort("date", reverse=True)
+        only_recent: list[tuple[str, ...]] = []
+        if local_self._matched_files is None:
             return self
-        for file in self._matched_files:
-            if last_file[:-1] != file[:-1]:
+        for file in local_self._matched_files:
+            tuple_exists = any(
+                file[:-1] == existing_tuple[:-1] for existing_tuple in only_recent
+            )
+            if not tuple_exists or not only_recent:
                 only_recent.append(file)
-                last_file = file
-        self._matched_files = only_recent
-        return self if sorting is None else self.sort(*sorting, reverse=reverse)
+        local_self._matched_files = only_recent
+        return (
+            local_self
+            if sorting is None
+            else local_self.sort(*sorting, reverse=reverse)
+        )
 
     def _re_create_file_paths(
         self,
