@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.0.3](https://github.com/engeir/volcano-base/compare/v2.0.2...v2.0.3) (2024-04-26)
+
+
+### Bug Fixes
+
+* **FindFiles:** keep most recent was not removing all old files ([ea594a2](https://github.com/engeir/volcano-base/commit/ea594a2f91c62bcdaf151646c186b2bece19a828))
+
+
+### Build System
+
+* **deps:** update all ([8f01131](https://github.com/engeir/volcano-base/commit/8f011314b8b6008c4196823cb6fcdd2634d7f3b6))
+
 ## [2.0.2](https://github.com/engeir/volcano-base/compare/v2.0.1...v2.0.2) (2024-04-19)
 
 
