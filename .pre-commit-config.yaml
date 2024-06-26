@@ -8,6 +8,12 @@ repos:
       - id: trailing-whitespace
   - repo: local
     hooks:
+      - id: dprint
+        name: dprint
+        entry: dprint fmt --incremental=false --allow-no-files
+        language: node
+        pass_filenames: false
+        additional_dependencies: [dprint]
       - id: check-added-large-files
         name: Check for added large files
         stages: [commit]
