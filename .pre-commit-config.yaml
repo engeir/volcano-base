@@ -6,7 +6,6 @@ repos:
       - id: check-yaml
       - id: end-of-file-fixer
       - id: trailing-whitespace
-
   - repo: local
     hooks:
       - id: check-added-large-files
@@ -14,35 +13,30 @@ repos:
         stages: [commit]
         entry: check-added-large-files
         language: system
-
       - id: ruff_format
         name: ruff_format
         stages: [commit]
         language: system
         entry: rye fmt
         types: [python]
-
       - id: ruff_check
         name: ruff_check
         stages: [commit]
         language: system
         entry: rye lint
         types: [python]
-
       - id: xdoctest
         name: xdoctest
         stages: [commit]
         language: system
         entry: rye run xdoctest
         types: [python]
-
       - id: pydocstringformatter
         name: pydocstringformatter
         stages: [commit]
         language: system
         entry: rye run pydocstringformatter src tests
         types: [python]
-
       - id: mypy
         name: mypy
         stages: [commit]
@@ -50,7 +44,6 @@ repos:
         entry: rye run mypy
         types: [python]
         require_serial: true
-
       - id: pydoclint
         name: pydoclint
         stages: [commit]
@@ -58,11 +51,18 @@ repos:
         entry: rye run pydoclint # src tests
         types: [python]
         require_serial: true
+      - id: stubgen
+        name: Generate stubfiles
+        stages: [commit]
+        language: system
+        entry: stubgen src/volcano_base/ -o src/
+        types: [python]
+        pass_filenames: false
 
-      # - id: pytest
-      #   name: pytest
-      #   stages: [commit]
-      #   language: system
-      #   entry: rye run pytest tests
-      #   types: [python]
-      #   pass_filenames: false
+# - id: pytest
+#   name: pytest
+#   stages: [commit]
+#   language: system
+#   entry: rye run pytest tests
+#   types: [python]
+#   pass_filenames: false

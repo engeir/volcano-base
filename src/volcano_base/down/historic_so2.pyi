@@ -1,0 +1,3 @@
+import pathlib
+
+def save_historical_so2(file: pathlib.Path) -> None: ...
