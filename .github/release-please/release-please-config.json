@@ -1,6 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
-  "bootstrap-sha": "e0fbca34875ccecab843755ff74e96d935ede779",
+  "bootstrap-sha": "acc89a988db5ecbe1f8bdec75b3f71c37cf416a5",
   "include-component-in-tag": false,
   "changelog-sections": [
     { "type": "feat", "section": "Features", "hidden": false },
