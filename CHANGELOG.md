@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.0.4](https://github.com/engeir/volcano-base/compare/v2.0.3...v2.0.4) (2024-06-26)
+
+
+### Miscellaneous
+
+* **deps:** bump pypa/gh-action-pypi-publish from 1.8.14 to 1.9.0 ([#80](https://github.com/engeir/volcano-base/issues/80)) ([f5e6486](https://github.com/engeir/volcano-base/commit/f5e6486fca255aca30720b301f316c81fb70ae08))
+* remove old commented code ([9603244](https://github.com/engeir/volcano-base/commit/9603244825c521aaa3aa9df47b5ede6102a9eb1e))
+
+
+### Styles
+
+* **mypy:** add stub files with stubgen ([cebdcd9](https://github.com/engeir/volcano-base/commit/cebdcd90040f03e50422ffb7b845162aee19ad5e))
+
 ## [2.0.3](https://github.com/engeir/volcano-base/compare/v2.0.2...v2.0.3) (2024-04-26)
 
 
