@@ -8,7 +8,6 @@ import re
 import warnings
 from typing import Literal
 
-import matplotlib.pyplot as plt
 import nc_time_axis  # noqa: F401
 import numpy as np
 import rich
@@ -841,25 +840,3 @@ class OttoBliesner(BaseModel):
         self._so2_peaks = so2[_ids]
         self._rf_peaks = rf_v[_ids]
         self._temperature_peaks = temp_v[_ids]
-
-
-def main():
-    """Run the main function."""
-    # rf = plt.figure().gca()
-    # temp = plt.figure().gca()
-    ob16_month = OttoBliesner(freq="h1", progress=True)
-    plt.figure()
-    ob16_month.aligned_arrays["so2-decay-start"].plot()
-    ob16_month.aligned_arrays["so2-start"].plot()
-    ob16_month.aligned_arrays["so2-rf"].plot()
-    ob16_month.aligned_arrays["so2-temperature"].plot()
-    ob16_month.aligned_arrays["rf"].plot()
-    ob16_month.aligned_arrays["temperature"].plot()
-    # a, b, c = ob16_month.so2_peaks, ob16_month.rf_peaks, ob16_month.temperature_peaks
-    # rf.plot(a, b, "o", label="RF")
-    # temp.plot(a, c, "o", label="Temperature")
-    plt.show()
-
-
-if __name__ == "__main__":
-    main()
