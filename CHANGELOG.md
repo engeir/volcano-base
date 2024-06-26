@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.0.6](https://github.com/engeir/volcano-base/compare/v2.0.5...v2.0.6) (2024-06-26)
+
+
+### Styles
+
+* format toml and md with dprint ([5302a0b](https://github.com/engeir/volcano-base/commit/5302a0b4b346f1e944152d13dd17ff58c496a503))
+
+### Continuous Integration
+
+* update release-please to v4 ([acc89a9](https://github.com/engeir/volcano-base/commit/acc89a988db5ecbe1f8bdec75b3f71c37cf416a5))
+
+
 ## [2.0.5](https://github.com/engeir/volcano-base/compare/v2.0.4...v2.0.5) (2024-06-26)
 
 
