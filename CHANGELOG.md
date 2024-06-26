@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.5](https://github.com/engeir/volcano-base/compare/v2.0.4...v2.0.5) (2024-06-26)
+
+
+### Continuous Integration
+
+* **fix:** install rye with mise, then build ([a561995](https://github.com/engeir/volcano-base/commit/a5619952fe5a91b23667a84ac5cf29025ce84e97))
+
 ## [2.0.4](https://github.com/engeir/volcano-base/compare/v2.0.3...v2.0.4) (2024-06-26)
 
 
