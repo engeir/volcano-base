@@ -1,5 +1,5 @@
 import pathlib
-from _typeshed import Incomplete
+from _typeshed import Incomplete as Incomplete
 from returns.result import Result as Result
 from typing import Literal, Never, NoReturn
 

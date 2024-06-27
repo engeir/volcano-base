@@ -1,6 +1,6 @@
 import pathlib
 import xarray as xr
-from _typeshed import Incomplete
+from _typeshed import Incomplete as Incomplete
 from collections.abc import Iterable
 from returns.result import Result as Result
 from typing import Self, overload

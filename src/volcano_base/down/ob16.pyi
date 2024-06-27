@@ -1,3 +1,1 @@
-from returns.maybe import Maybe as Maybe
-
 def save_to_npz(just_looking: bool = True) -> None: ...

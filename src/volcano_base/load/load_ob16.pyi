@@ -1,6 +1,6 @@
 import numpy as np
 import xarray as xr
-from _typeshed import Incomplete
+from _typeshed import Incomplete as Incomplete
 from pydantic import BaseModel
 from typing import Literal
 

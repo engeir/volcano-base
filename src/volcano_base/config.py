@@ -1,6 +1,7 @@
 """Configuration file for `volcano-base`."""
 
 import pathlib
+from io import TextIOWrapper
 from typing import Literal, Never, NoReturn
 
 import tomllib
@@ -43,14 +44,16 @@ def create_config() -> Result[pathlib.Path, str]:
     return Success(_cfg)
 
 
-def _config_content(cfg, here, _data, _save):
-    cfg.write("[volcano-base]\n")
-    cfg.write("# Location of the repository\n")
-    cfg.write(f'project_root = "{here.resolve()}"\n')
-    cfg.write("# Location of the data used in analysis scripts\n")
-    cfg.write(f'data_path = "{_data.resolve()}"\n')
-    cfg.write("# Location of the saved figures\n")
-    cfg.write(f'save_path = "{_save.resolve()}"')
+def _config_content(
+    cfg: TextIOWrapper, here: pathlib.Path, _data: pathlib.Path, _save: pathlib.Path
+):
+    _ = cfg.write("[volcano-base]\n")
+    _ = cfg.write("# Location of the repository\n")
+    _ = cfg.write(f'project_root = "{here.resolve()}"\n')
+    _ = cfg.write("# Location of the data used in analysis scripts\n")
+    _ = cfg.write(f'data_path = "{_data.resolve()}"\n')
+    _ = cfg.write("# Location of the saved figures\n")
+    _ = cfg.write(f'save_path = "{_save.resolve()}"')
 
 
 match create_config():
@@ -58,9 +61,11 @@ match create_config():
         pass
     case Failure(msg):
         raise FileNotFoundError(msg)
+    case _:
+        raise FileNotFoundError
 # https://github.com/python/mypy/issues/16423
 with _cfg.open(mode="rb") as cfg:
-    out = tomllib.load(cfg)
+    out: dict[str, dict[str, str]] = tomllib.load(cfg)
     PROJECT_ROOT = pathlib.Path(out["volcano-base"]["project_root"])
     DATA_PATH = pathlib.Path(out["volcano-base"]["data_path"])
     SAVE_PATH = pathlib.Path(out["volcano-base"]["save_path"])

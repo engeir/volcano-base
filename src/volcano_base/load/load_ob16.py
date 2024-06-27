@@ -10,9 +10,10 @@ from typing import Literal
 
 import nc_time_axis  # noqa: F401
 import numpy as np
-import rich
+import rich.progress
 import scipy
 import xarray as xr
+from numpy.typing import NDArray
 from pydantic import BaseModel, Field
 
 import volcano_base
@@ -21,9 +22,9 @@ import volcano_base
 class Ob16FileNotFound(FileNotFoundError):
     """Raise an error if one of the Otto-Bliesner et al. (2016) files are not found."""
 
-    def __init__(self, *args: object) -> None:
+    def __init__(self, *args: str) -> None:
         if args:
-            msg = f'Cannot find the file "{args[0]}", which is a nescessary Otto-Blienser et al. (2016) file.'
+            msg = f'Cannot find the file "{args[0]}", which is a necessary Otto-Blienser et al. (2016) file.'
         else:
             msg = "Cannot find the necessary Otto-Bliesner et al. (2016) files."
         self.message = f"{msg} Please run the `save_to_npz` function within `down.ob16` to see what files are missing."
@@ -50,6 +51,34 @@ class OttoBliesner(BaseModel):
     progress: bool = Field(
         default=False, description="Show progress bar while loading in data."
     )
+    _rf_ensemble: tuple[
+        xr.DataArray, xr.DataArray, xr.DataArray, xr.DataArray, xr.DataArray
+    ]
+    _rf_median: xr.DataArray
+    _rf_control_raw: xr.DataArray
+    _rf_control: xr.DataArray
+    _rf_peaks: NDArray[np.float64]
+    _temperature_ensemble: tuple[
+        xr.DataArray, xr.DataArray, xr.DataArray, xr.DataArray, xr.DataArray
+    ]
+    _temperature_median: xr.DataArray
+    _temperature_control_raw: xr.DataArray
+    _temperature_control: xr.DataArray
+    _temperature_peaks: NDArray[np.float64]
+    _so2: xr.DataArray
+    _so2_delta: xr.DataArray
+    _aligned_arrays: dict[
+        Literal[
+            "so2-decay-start",
+            "so2-start",
+            "so2-rf",
+            "so2-temperature",
+            "rf",
+            "temperature",
+        ],
+        xr.DataArray,
+    ]
+    _so2_peaks: NDArray[np.float64]
 
     class Config:
         """Configuration for the OttoBliesner BaseModel object."""
@@ -167,12 +196,12 @@ class OttoBliesner(BaseModel):
         return self._temperature_control
 
     @property
-    def temperature_peaks(self) -> np.ndarray:
+    def temperature_peaks(self) -> NDArray[np.float64]:
         """Return the temperature peaks.
 
         Returns
         -------
-        np.ndarray
+        NDArray[np.float64]
             Array holding all found peak values
         """
         if not hasattr(self, "_temperature_peaks"):
@@ -180,12 +209,12 @@ class OttoBliesner(BaseModel):
         return self._temperature_peaks
 
     @property
-    def rf_peaks(self) -> np.ndarray:
+    def rf_peaks(self) -> NDArray[np.float64]:
         """Return the radiative forcing peaks.
 
         Returns
         -------
-        np.ndarray
+        NDArray[np.float64]
             Array holding all found peak values
         """
         if not hasattr(self, "_rf_peaks"):
@@ -245,12 +274,12 @@ class OttoBliesner(BaseModel):
         return self._aligned_arrays
 
     @property
-    def so2_peaks(self) -> np.ndarray:
+    def so2_peaks(self) -> NDArray[np.float64]:
         """Return the SO2 peaks.
 
         Returns
         -------
-        np.ndarray
+        NDArray[np.float64]
             Array holding all SO2 peak values
         """
         self._set_peak_arrays()
@@ -308,9 +337,9 @@ class OttoBliesner(BaseModel):
 
     def _find_peaks_in_so2(
         self,
-        frc: np.ndarray,
+        frc: NDArray[np.float64],
         time_: xr.CFTimeIndex,
-    ) -> tuple[np.ndarray, xr.CFTimeIndex]:
+    ) -> tuple[NDArray[np.float64], xr.CFTimeIndex]:
         new_array = np.zeros_like(frc)
         limit = 2e-6
         for i, v in enumerate(frc):
@@ -335,10 +364,10 @@ class OttoBliesner(BaseModel):
 
     def _month2day(
         self,
-        arr: np.ndarray,
+        arr: NDArray[np.float64],
         start: Literal[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] = 1,
         multiplier: int | Literal["auto"] = 0,
-    ) -> np.ndarray:
+    ) -> NDArray[np.float64]:
         # Go from monthly to daily
         newest = np.array([])
         # Add 30, 29 or 27 elements between all elements: months -> days
@@ -391,9 +420,9 @@ class OttoBliesner(BaseModel):
         """
         # Need AOD and RF seasonal and annual means, as well as an array of equal length
         # with the corresponding time-after-eruption.
-        path = volcano_base.config.DATA_PATH / "cesm-lme"
+        path: pathlib.Path = volcano_base.config.DATA_PATH / "cesm-lme"
         if not path.exists():
-            raise Ob16FileNotFound(path.resolve())
+            raise Ob16FileNotFound(str(path.resolve()))
         match self.freq:
             case "h1":
                 pattern = re.compile("/([A-Z]+)-00[1-5]\\.npz$", re.X)
@@ -404,7 +433,8 @@ class OttoBliesner(BaseModel):
         files_ = list(path.rglob("*00[1-5].npz"))
         return self._load_npz(files_, pattern, search_group)
 
-    def _setup_progress_bar(self) -> rich.progress.Progress:
+    @staticmethod
+    def _setup_progress_bar() -> rich.progress.Progress:
         return rich.progress.Progress(
             rich.progress.TextColumn("[progress.description]{task.description}"),
             rich.progress.SpinnerColumn(),
@@ -412,7 +442,7 @@ class OttoBliesner(BaseModel):
             rich.progress.TaskProgressColumn(),
             rich.progress.MofNCompleteColumn(),
             rich.progress.TimeRemainingColumn(elapsed_when_finished=True),
-            transient=not self.progress,
+            transient=True,
         )
 
     def _load_npz(
@@ -518,7 +548,7 @@ class OttoBliesner(BaseModel):
             / f"TREFHT850forcing-control{specifier}-003.npz"
         )
         if not file_name.exists():
-            raise Ob16FileNotFound(file_name.resolve())
+            raise Ob16FileNotFound(str(file_name.resolve()))
         array = self._load_numpy(file_name.resolve())
         s = "0850-01-01"
         t = xr.cftime_range(
@@ -598,7 +628,7 @@ class OttoBliesner(BaseModel):
             / f"FSNTOA850forcing-control{specifier}-003.npz"
         )
         if not file_name.exists():
-            raise Ob16FileNotFound(file_name.resolve())
+            raise Ob16FileNotFound(str(file_name.resolve()))
         array = self._load_numpy(file_name.resolve())
         s = "0850-01-01"
         t = xr.cftime_range(
@@ -792,17 +822,7 @@ class OttoBliesner(BaseModel):
             so2_temp_peak = so2_temp_peak[:-1]
             rf = rf[:-1]
             temp = temp[:-1]
-        self._aligned_arrays: dict[
-            Literal[
-                "so2-decay-start",
-                "so2-start",
-                "so2-rf",
-                "so2-temperature",
-                "rf",
-                "temperature",
-            ],
-            xr.DataArray,
-        ] = {
+        self._aligned_arrays = {
             "so2-decay-start": so2_decay_start,
             "so2-start": so2_start,
             "so2-rf": so2_rf_peak,
@@ -812,7 +832,7 @@ class OttoBliesner(BaseModel):
         }
 
     @staticmethod
-    def _so2_daily_time_axis(array: np.ndarray) -> xr.CFTimeIndex:
+    def _so2_daily_time_axis(array: NDArray[np.float64]) -> xr.CFTimeIndex:
         time_ = xr.cftime_range(start="0501", end="2002", freq="D", calendar="noleap")[
             : len(array)
         ]
