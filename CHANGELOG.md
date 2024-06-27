@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.7](https://github.com/engeir/volcano-base/compare/v2.0.6...v2.0.7) (2024-06-27)
+
+
+### Miscellaneous
+
+* **typing:** improve type annotations ([7719979](https://github.com/engeir/volcano-base/commit/7719979c86490201430ab1d9efb418a1732d30ee))
+
 ## [2.0.6](https://github.com/engeir/volcano-base/compare/v2.0.5...v2.0.6) (2024-06-26)
 
 
