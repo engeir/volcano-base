@@ -73,6 +73,7 @@ class OttoBliesner(BaseModel):
             "so2-start",
             "so2-rf",
             "so2-temperature",
+            "icefrac",
             "rf",
             "temperature",
         ],
@@ -100,61 +101,8 @@ class OttoBliesner(BaseModel):
             The ensemble members.
         """
         if not hasattr(self, "_temperature_ensemble"):
-            self._temperature_ensemble = self._set_rf_temp_ensembles("TREFHT")
+            self._temperature_ensemble = self._set_variable_ensembles("TREFHT")
         return self._temperature_ensemble
-
-    @property
-    def rf_ensemble(
-        self,
-    ) -> tuple[xr.DataArray, xr.DataArray, xr.DataArray, xr.DataArray, xr.DataArray]:
-        """Return the radiative forcing ensemble.
-
-        Returns
-        -------
-        tuple[xr.DataArray, xr.DataArray, xr.DataArray, xr.DataArray, xr.DataArray]
-            The ensemble members.
-        """
-        if not hasattr(self, "_rf_ensemble"):
-            self._rf_ensemble = self._set_rf_temp_ensembles("FSNTOA")
-        return self._rf_ensemble
-
-    @property
-    def rf_median(self) -> xr.DataArray:
-        """Return the median of the radiative forcing time series.
-
-        Returns
-        -------
-        xr.DataArray
-            Median of the radiative forcing time series
-        """
-        self._set_rf_median()
-        return self._rf_median
-
-    @property
-    def rf_control_raw(self) -> xr.DataArray:
-        """Return the raw control RF time series.
-
-        Returns
-        -------
-        xr.DataArray
-            The control RF time series
-        """
-        if not hasattr(self, "_rf_control_raw"):
-            self._set_rf_median()
-        return self._rf_control_raw
-
-    @property
-    def rf_control(self) -> xr.DataArray:
-        """Return the control RF time series.
-
-        Returns
-        -------
-        xr.DataArray
-            The control RF time series
-        """
-        if not hasattr(self, "_rf_control"):
-            self._set_rf_median()
-        return self._rf_control
 
     @property
     def temperature_median(self) -> xr.DataArray:
@@ -209,6 +157,59 @@ class OttoBliesner(BaseModel):
         return self._temperature_peaks
 
     @property
+    def rf_ensemble(
+        self,
+    ) -> tuple[xr.DataArray, xr.DataArray, xr.DataArray, xr.DataArray, xr.DataArray]:
+        """Return the radiative forcing ensemble.
+
+        Returns
+        -------
+        tuple[xr.DataArray, xr.DataArray, xr.DataArray, xr.DataArray, xr.DataArray]
+            The ensemble members.
+        """
+        if not hasattr(self, "_rf_ensemble"):
+            self._rf_ensemble = self._set_variable_ensembles("FSNTOA")
+        return self._rf_ensemble
+
+    @property
+    def rf_median(self) -> xr.DataArray:
+        """Return the median of the radiative forcing time series.
+
+        Returns
+        -------
+        xr.DataArray
+            Median of the radiative forcing time series
+        """
+        self._set_rf_median()
+        return self._rf_median
+
+    @property
+    def rf_control_raw(self) -> xr.DataArray:
+        """Return the raw control RF time series.
+
+        Returns
+        -------
+        xr.DataArray
+            The control RF time series
+        """
+        if not hasattr(self, "_rf_control_raw"):
+            self._set_rf_median()
+        return self._rf_control_raw
+
+    @property
+    def rf_control(self) -> xr.DataArray:
+        """Return the control RF time series.
+
+        Returns
+        -------
+        xr.DataArray
+            The control RF time series
+        """
+        if not hasattr(self, "_rf_control"):
+            self._set_rf_median()
+        return self._rf_control
+
+    @property
     def rf_peaks(self) -> NDArray[np.float64]:
         """Return the radiative forcing peaks.
 
@@ -220,6 +221,72 @@ class OttoBliesner(BaseModel):
         if not hasattr(self, "_rf_peaks"):
             self._set_peak_arrays()
         return self._rf_peaks
+
+    @property
+    def icefrac_ensemble(
+        self,
+    ) -> tuple[xr.DataArray, xr.DataArray, xr.DataArray, xr.DataArray, xr.DataArray]:
+        """Return the sea-ice fractions ensemble.
+
+        Returns
+        -------
+        tuple[xr.DataArray, xr.DataArray, xr.DataArray, xr.DataArray, xr.DataArray]
+            The ensemble members.
+        """
+        if not hasattr(self, "_icefrac_ensemble"):
+            self._icefrac_ensemble = self._set_variable_ensembles("ICEFRAC")
+        return self._icefrac_ensemble
+
+    @property
+    def icefrac_median(self) -> xr.DataArray:
+        """Return the median of the sea-ice fraction time series.
+
+        Returns
+        -------
+        xr.DataArray
+            Median of the sea-ice fraction time series
+        """
+        self._set_icefrac_median()
+        return self._icefrac_median
+
+    @property
+    def icefrac_control_raw(self) -> xr.DataArray:
+        """Return the raw control ICEFRAC time series.
+
+        Returns
+        -------
+        xr.DataArray
+            The control ICEFRAC time series
+        """
+        if not hasattr(self, "_icefrac_control_raw"):
+            self._set_icefrac_median()
+        return self._icefrac_control_raw
+
+    @property
+    def icefrac_control(self) -> xr.DataArray:
+        """Return the control ICEFRAC time series.
+
+        Returns
+        -------
+        xr.DataArray
+            The control ICEFRAC time series
+        """
+        if not hasattr(self, "_icefrac_control"):
+            self._set_icefrac_median()
+        return self._icefrac_control
+
+    @property
+    def icefrac_peaks(self) -> NDArray[np.float64]:
+        """Return the sea-ice fraction peaks.
+
+        Returns
+        -------
+        NDArray[np.float64]
+            Array holding all found peak values
+        """
+        if not hasattr(self, "_icefrac_peaks"):
+            self._set_peak_arrays()
+        return self._icefrac_peaks
 
     @property
     def so2(self) -> xr.DataArray:
@@ -256,6 +323,7 @@ class OttoBliesner(BaseModel):
             "so2-start",
             "so2-rf",
             "so2-temperature",
+            "icefrac",
             "rf",
             "temperature",
         ],
@@ -265,7 +333,7 @@ class OttoBliesner(BaseModel):
 
         Returns
         -------
-        dict[Literal['so2-decay-start', 'so2-start', 'so2-rf', 'so2-temperature', 'rf', 'temperature'], xr.DataArray]
+        dict[Literal['so2-decay-start', 'so2-start', 'so2-rf', 'so2-temperature', 'icefrac', 'rf', 'temperature'], xr.DataArray]
             The RF and temperature arrays along with SO2 arrays aligned with the
             eruption start, RF peak and temperature peak.
         """
@@ -398,7 +466,7 @@ class OttoBliesner(BaseModel):
         # The new time axis now goes down to one day
         return newest
 
-    def _set_rf_temp_ensembles(
+    def _set_variable_ensembles(
         self, search_group: str
     ) -> tuple[xr.DataArray, xr.DataArray, xr.DataArray, xr.DataArray, xr.DataArray]:
         """Create samples from Otto-Bliesner et al. 2016.
@@ -529,6 +597,47 @@ class OttoBliesner(BaseModel):
             xarr = xr.DataArray(data["data"], dims=dims, coords=coords)
         return xarr
 
+    def _subtract_climatology(
+        self,
+        variable: Literal["ICEFRAC", "TREFHT", "FSNTOA"],
+        raw_arr: xr.DataArray,
+        arr: xr.DataArray,
+        groupby: Literal["time.dayofyear", "time.month"],
+    ) -> xr.DataArray:
+        """Subtract the climatological mean.
+
+        Parameters
+        ----------
+        variable : Literal["ICEFRAC", "TREFHT", "FSNTOA"]
+            The variable to subtract the climatology from.
+        raw_arr : xr.DataArray
+            The raw data array to take the climatology from.
+        arr : xr.DataArray
+            The data array to subtract the climatology from.
+        groupby : Literal["time.dayofyear", "time.month"]
+            The groupby string to use when grouping the data.
+
+        Returns
+        -------
+        xr.DataArray
+            The data array with the climatology subtracted.
+        """
+        raw_arr, arr = xr.align(raw_arr, arr)
+        climatology_ = raw_arr.groupby(groupby)
+        climatology = (
+            climatology_.mean("time") if "month" in groupby else climatology_.mean()
+        )
+        if variable == "TREFHT":
+            self._temperature_control_raw = raw_arr
+            self._temperature_control = raw_arr.groupby(groupby) - climatology
+        elif variable == "FSNTOA":
+            self._rf_control_raw = raw_arr
+            self._rf_control = raw_arr.groupby(groupby) - climatology
+        elif variable == "ICEFRAC":
+            self._icefrac_control_raw = raw_arr
+            self._icefrac_control = raw_arr.groupby(groupby) - climatology
+        return arr.groupby(groupby) - climatology
+
     def _remove_temp_seasonality(self, arr: xr.DataArray) -> xr.DataArray:
         """Remove seasonality by subtracting CESM LME control run."""
         match self.freq:
@@ -570,44 +679,6 @@ class OttoBliesner(BaseModel):
                 )
             case _:
                 volcano_base.never_called(self.freq)
-
-    def _subtract_climatology(
-        self,
-        variable: Literal["TREFHT", "FSNTOA"],
-        raw_arr: xr.DataArray,
-        arr: xr.DataArray,
-        groupby: Literal["time.dayofyear", "time.month"],
-    ) -> xr.DataArray:
-        """Subtract the climatological mean.
-
-        Parameters
-        ----------
-        variable : Literal["TREFHT", "FSNTOA"]
-            The variable to subtract the climatology from.
-        raw_arr : xr.DataArray
-            The raw data array to take the climatology from.
-        arr : xr.DataArray
-            The data array to subtract the climatology from.
-        groupby : Literal["time.dayofyear", "time.month"]
-            The groupby string to use when grouping the data.
-
-        Returns
-        -------
-        xr.DataArray
-            The data array with the climatology subtracted.
-        """
-        raw_arr, arr = xr.align(raw_arr, arr)
-        climatology_ = raw_arr.groupby(groupby)
-        climatology = (
-            climatology_.mean("time") if "month" in groupby else climatology_.mean()
-        )
-        if variable == "TREFHT":
-            self._temperature_control_raw = raw_arr
-            self._temperature_control = raw_arr.groupby(groupby) - climatology
-        elif variable == "FSNTOA":
-            self._rf_control_raw = raw_arr
-            self._rf_control = raw_arr.groupby(groupby) - climatology
-        return arr.groupby(groupby) - climatology
 
     def _remove_rf_seasonality_ctrl(self, arr: xr.DataArray) -> xr.DataArray:
         """Remove seasonality by subtracting CESM LME control run."""
@@ -662,6 +733,78 @@ class OttoBliesner(BaseModel):
             rf = self._remove_rf_seasonality_ctrl(rf)
         return rf
 
+    def _remove_icefrac_seasonality_ctrl(self, arr: xr.DataArray) -> xr.DataArray:
+        """Remove seasonality by subtracting CESM LME control run."""
+        match self.freq:
+            case "h0":
+                f1 = "MS"
+                specifier = "-monthly"
+                shift = 15
+            case "h1":
+                f1 = "D"
+                specifier = ""
+                shift = 0
+            case _:
+                volcano_base.never_called(self.freq)
+        file_name = (
+            volcano_base.config.DATA_PATH
+            / "cesm-lme"
+            / f"ICEFRAC850forcing-control{specifier}-003.npz"
+        )
+        if not file_name.exists():
+            raise Ob16FileNotFound(str(file_name.resolve()))
+        array = self._load_numpy(file_name.resolve())
+        s = "0850-01-01"
+        t = xr.cftime_range(
+            start=s, periods=len(array.data), calendar="noleap", freq=f1
+        ) + datetime.timedelta(days=shift)
+        raw_icefrac = array.assign_coords({"time": t})
+        match self.freq:
+            case "h0":
+                return self._subtract_climatology(
+                    "ICEFRAC", raw_icefrac, arr, "time.month"
+                )
+            case "h1":
+                return self._subtract_climatology(
+                    "ICEFRAC", raw_icefrac, arr, "time.dayofyear"
+                )
+            case _:
+                volcano_base.never_called(self.freq)
+
+    def _remove_icefrac_seasonality(self, icefrac: xr.DataArray) -> xr.DataArray:
+        strategy_ctrl = True
+        if not strategy_ctrl:
+            # Remove noise in Fourier domain (seasonal and 6-month cycles)
+            match self.freq:
+                case "h0":
+                    f1 = 1.014
+                case "h1":
+                    f1 = 1
+                case _:
+                    volcano_base.never_called(self.freq)
+            icefrac = volcano_base.manipulate.remove_seasonality(
+                [icefrac.copy()], freq=f1
+            )[0]
+            icefrac = volcano_base.manipulate.remove_seasonality(
+                [icefrac], freq=f1 * 2
+            )[0]
+        else:
+            icefrac = self._remove_icefrac_seasonality_ctrl(icefrac)
+        return icefrac
+
+    def _set_icefrac_median(self) -> None:
+        """Return Otto-Bliesner et al. 2016 sea-ice fractions."""
+        icefrac = volcano_base.manipulate.get_median(
+            list(self.icefrac_ensemble).copy(), xarray=True
+        )
+        icefrac = self._remove_icefrac_seasonality(icefrac)
+        # Adjust the sea-ice fraction so its mean is at zero. We also remove a slight
+        # drift by means of a linear regression fit.
+        x_ax = volcano_base.manipulate.dt2float(icefrac.time.data)
+        icefrac_lin_reg = scipy.stats.linregress(x_ax, icefrac.data)
+        icefrac.data -= x_ax * icefrac_lin_reg.slope + icefrac_lin_reg.intercept
+        self._icefrac_median = icefrac
+
     def _set_rf_median(self) -> None:
         """Return Otto-Bliesner et al. 2016 radiative forcing."""
         rf = volcano_base.manipulate.get_median(
@@ -677,12 +820,12 @@ class OttoBliesner(BaseModel):
         temp = volcano_base.manipulate.get_median(
             list(self.temperature_ensemble).copy(), xarray=True
         )
-        # Seasonality is removed by use of a control run temperature time series, where we
-        # compute a climatology mean for each day of the year which is subtracted from the
-        # time series.
+        # Seasonality is removed by use of a control run temperature time series, where
+        # we compute a climatology mean for each day of the year which is subtracted
+        # from the time series.
         temp = self._remove_temp_seasonality(temp)
-        # Adjust the temperature so its mean is at zero. We also remove a slight drift by
-        # means of a linear regression fit.
+        # Adjust the temperature so its mean is at zero. We also remove a slight drift
+        # by means of a linear regression fit.
         x_ax = volcano_base.manipulate.dt2float(temp.time.data)
         temp_lin_reg = scipy.stats.linregress(x_ax, temp.data)
         temp.data -= x_ax * temp_lin_reg.slope + temp_lin_reg.intercept
@@ -692,9 +835,11 @@ class OttoBliesner(BaseModel):
         self,
         so2_decay_start: xr.DataArray,
         so2_start: xr.DataArray,
+        icefrac: xr.DataArray,
         rf: xr.DataArray,
         temp: xr.DataArray,
     ) -> tuple[
+        xr.DataArray,
         xr.DataArray,
         xr.DataArray,
         xr.DataArray,
@@ -791,9 +936,10 @@ class OttoBliesner(BaseModel):
         so2_start = so2_start[slices[1]]
         so2_rf_peak = so2_rf_peak[slices[2]]
         so2_temp_peak = so2_temp_peak[slices[3]]
+        icefrac = icefrac[slices[4]]
         rf = rf[slices[4]]
         temp = temp[slices[5]]
-        return so2_decay_start, so2_start, so2_rf_peak, so2_temp_peak, rf, temp
+        return so2_decay_start, so2_start, so2_rf_peak, so2_temp_peak, icefrac, rf, temp
 
     def _set_aligned_arrays(self) -> None:
         """Return Otto-Bliesner et al. 2016 SO2, RF and temperature peaks.
@@ -805,21 +951,24 @@ class OttoBliesner(BaseModel):
         temp.data *= -1
         rf = self.rf_median.copy()
         rf.data *= -1
+        icefrac = self.icefrac_median.copy()
 
         (
             so2_decay_start,
             so2_start,
             so2_rf_peak,
             so2_temp_peak,
+            icefrac,
             rf,
             temp,
-        ) = self._force_align(self.so2.copy(), self.so2_delta.copy(), rf, temp)
+        ) = self._force_align(self.so2.copy(), self.so2_delta.copy(), icefrac, rf, temp)
 
         if not len(so2_start) % 2:
             so2_decay_start = so2_decay_start[:-1]
             so2_start = so2_start[:-1]
             so2_rf_peak = so2_rf_peak[:-1]
             so2_temp_peak = so2_temp_peak[:-1]
+            icefrac = icefrac[:-1]
             rf = rf[:-1]
             temp = temp[:-1]
         self._aligned_arrays = {
@@ -827,6 +976,7 @@ class OttoBliesner(BaseModel):
             "so2-start": so2_start,
             "so2-rf": so2_rf_peak,
             "so2-temperature": so2_temp_peak,
+            "icefrac": icefrac,
             "rf": rf,
             "temperature": temp,
         }
@@ -854,9 +1004,11 @@ class OttoBliesner(BaseModel):
         _idx_rf = np.argwhere(self.aligned_arrays["so2-rf"].data > 0)
         _idx_temp = np.argwhere(self.aligned_arrays["so2-temperature"].data > 0)
         so2 = self.aligned_arrays["so2-rf"].data[_idx_rf].flatten()
+        icefrac_v = self.aligned_arrays["icefrac"].data[_idx_rf].flatten()
         rf_v = self.aligned_arrays["rf"].data[_idx_rf].flatten()
         temp_v = self.aligned_arrays["temperature"].data[_idx_temp].flatten()
         _ids = so2.argsort()
         self._so2_peaks = so2[_ids]
+        self._icefrac_peaks = icefrac_v[_ids]
         self._rf_peaks = rf_v[_ids]
         self._temperature_peaks = temp_v[_ids]

@@ -86,14 +86,18 @@ def _save_output_files_to_npz(
     _download_ensemble("TREFHT", save_modifier, just_looking, file_tup)
     # RF forcing
     _download_ensemble("FSNTOA", save_modifier, just_looking, file_tup)
+    # Sea-ice fraction
+    _download_ensemble("ICEFRAC", save_modifier, just_looking, file_tup)
     # Control run for temperature.
     _download_ctrl_run("TREFHT", save_modifier, just_looking, ctrl_file_tup)
     # Control run for RF forcing.
     _download_ctrl_run("FSNTOA", save_modifier, just_looking, ctrl_file_tup)
+    # Control run for sea-ice fraction
+    _download_ctrl_run("ICEFRAC", save_modifier, just_looking, ctrl_file_tup)
 
 
 def _download_ctrl_run(
-    variable: Literal["FSNTOA", "TREFHT"],
+    variable: Literal["ICEFRAC", "FSNTOA", "TREFHT"],
     save_modifier,
     just_looking,
     file_tup,
@@ -126,7 +130,7 @@ def _download_ctrl_run(
 
 
 def _download_ensemble(
-    variable: Literal["FSNTOA", "TREFHT"],
+    variable: Literal["ICEFRAC", "FSNTOA", "TREFHT"],
     save_modifier,
     just_looking,
     file_tup,
