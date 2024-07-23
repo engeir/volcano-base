@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.0](https://github.com/engeir/volcano-base/compare/v2.0.7...v2.1.0) (2024-07-23)
+
+
+### Features
+
+* **load:** add support for OB16 ICEFRAC output field ([ea193fa](https://github.com/engeir/volcano-base/commit/ea193fa9ff3ad79a35ac7a32a5a86fcdb31be092))
+
 ## [2.0.7](https://github.com/engeir/volcano-base/compare/v2.0.6...v2.0.7) (2024-06-27)
 
 
