@@ -70,7 +70,7 @@ def approx_align(*a: xr.DataArray) -> tuple[xr.DataArray, ...]:
     return tuple(value.interp_like(a[0]) for value in a)
 
 
-def shift_arrays(
+def shift_arrays(  # noqa: PLR0912
     arrays: list[xr.DataArray],
     ens: str | None = None,
     daily: bool = True,
@@ -337,7 +337,7 @@ def _remove_seasonality_fourier(
             " try with a larger one."
         )
         print(
-            "HINT: You can also view the before/after of this function by pasing in"
+            "HINT: You can also view the before/after of this function by passing in"
             " the `plot=True` keyword argument."
         )
     new_f_clean = scipy.fft.irfft(yf_clean)
@@ -460,6 +460,67 @@ def float2dt(arr: xr.CFTimeIndex | np.ndarray, freq: str = "D") -> xr.CFTimeInde
     )
 
 
+def pressureheight2metricheight(
+    pressure_coords: xr.DataArray | np.ndarray,
+) -> xr.DataArray | np.ndarray:
+    """Convert from pressure height coordinates to using height in kilometers.
+
+    Parameters
+    ----------
+    pressure_coords : xr.DataArray | np.ndarray
+        The pressure coordinates that should instead be used to show metric height.
+
+    Returns
+    -------
+    meter : xr.DataArray | np.ndarray
+        The metric coordinates corresponding to the pressure coordinates passed in.
+
+    Raises
+    ------
+    ValueError
+        If the pressure coordinates include negative values.
+
+    Notes
+    -----
+    Based on the plots on https://maglit.me/transpauchal, where we find that 80 km is
+    approximately 1e-2 hPa and 0 km is approximately 1e3 hPa.
+    """
+    if any(pressure_coords < 0):
+        raise ValueError("You cannot work with negative pressure.")
+    meter = -np.log10(pressure_coords) + 3
+    return meter * 16
+
+
+def metricheight2pressureheight(
+    metric_coords: xr.DataArray | np.ndarray,
+) -> xr.DataArray | np.ndarray:
+    """Convert from metric height coordinates to using height in pressure [hPa].
+
+    Parameters
+    ----------
+    metric_coords : xr.DataArray | np.ndarray
+        The metric coordinates that should instead be used to show pressure height.
+
+    Returns
+    -------
+    pressure : xr.DataArray | np.ndarray
+        The pressure coordinates corresponding to the metric coordinates passed in.
+
+    Raises
+    ------
+    ValueError
+        If the metric coordinates include negative values.
+
+    Notes
+    -----
+    Based on the plots on https://maglit.me/transpauchal, where we find that 80 km is
+    approximately 1e-2 hPa and 0 km is approximately 1e3 hPa.
+    """
+    if any(metric_coords < 0):
+        raise ValueError("You cannot work with negative height.")
+    return 10 ** (-metric_coords / 16 + 3)
+
+
 @overload
 def get_median(arrays: list[xr.DataArray], xarray: Literal[True]) -> xr.DataArray: ...
 
@@ -506,6 +567,55 @@ def get_median(
         out = out.assign_attrs(array[0].attrs)
         return out
     return x_ax, np.median(y_ax, axis=0)
+
+
+@overload
+def get_mean(arrays: list[xr.DataArray], xarray: Literal[True]) -> xr.DataArray: ...
+
+
+@overload
+def get_mean(
+    arrays: list[xr.DataArray], xarray: Literal[False]
+) -> tuple[np.ndarray, np.ndarray]: ...
+
+
+def get_mean(
+    arrays: list[xr.DataArray], xarray: bool = False, xax_name: str = "time"
+) -> tuple[np.ndarray, np.ndarray] | xr.DataArray:
+    """Get the mean across all arrays in `arrays`.
+
+    Parameters
+    ----------
+    arrays : list[xr.DataArray]
+        A list of xarray DataArrays to shift.
+    xarray : bool
+        Return the array as a data array, using the meta data of the first element of
+        ``arrays``.
+    xax_name : str
+        The name of the x-axis. Default is 'time'
+
+    Returns
+    -------
+    tuple[np.ndarray, np.ndarray] | xr.DataArray
+        First and second axis with the median of the arrays.
+
+    Notes
+    -----
+    The arrays are assumed to be correctly aligned, consider running `shift_arrays` on
+    them before obtaining the mean from this function.
+    """
+    array = arrays[:]
+    x_ax = getattr(array[0], xax_name).data
+    y_ax = np.zeros((len(array), len(array[0].data)))
+    for i, arr in enumerate(array):
+        y_ax[i, :] = arr[:].data
+    if xarray:
+        out = array[0].copy()
+        out.data = np.mean(y_ax, axis=0)
+        out = out.assign_coords({xax_name: x_ax})
+        out = out.assign_attrs(array[0].attrs)
+        return out
+    return x_ax, np.mean(y_ax, axis=0)
 
 
 @overload
@@ -587,7 +697,7 @@ def subtract_mean_of_tail(arrs: list, n_elements: int = 120) -> list:
     # Subtract the mean of the last decade
     for i, arr in enumerate(arrs):
         arr_ = arr[-n_elements:]
-        arr.data = arr.data - arr_.mean().data
+        arr.data -= arr_.mean().data
         arrs[i] = arr
     return arrs
 
