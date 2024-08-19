@@ -7,7 +7,7 @@
 #   all-features: false
 #   with-sources: false
 #   generate-hashes: false
-#   universal: false
+#   universal: true
 
 -e file:.
 annotated-types==0.6.0
@@ -24,6 +24,8 @@ click==8.1.7
     # via dask
 cloudpickle==3.0.0
     # via dask
+colorama==0.4.6 ; platform_system == 'Windows'
+    # via click
 contourpy==1.2.1
     # via matplotlib
 cycler==0.12.1

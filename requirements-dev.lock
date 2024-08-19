@@ -7,7 +7,7 @@
 #   all-features: false
 #   with-sources: false
 #   generate-hashes: false
-#   universal: false
+#   universal: true
 
 -e file:.
 annotated-types==0.6.0
@@ -28,6 +28,9 @@ click==8.1.7
     # via pydoclint
 cloudpickle==3.0.0
     # via dask
+colorama==0.4.6 ; platform_system == 'Windows' or sys_platform == 'win32'
+    # via click
+    # via pytest
 contourpy==1.2.1
     # via matplotlib
 cycler==0.12.1
@@ -135,7 +138,7 @@ rich==13.7.1
     # via volcano-base
 ruamel-yaml==0.18.6
     # via pre-commit-hooks
-ruamel-yaml-clib==0.2.8
+ruamel-yaml-clib==0.2.8 ; python_version < '3.13' and platform_python_implementation == 'CPython'
     # via ruamel-yaml
 ruff==0.4.2
 scipy==1.13.0
