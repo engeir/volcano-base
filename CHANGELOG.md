@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.2.0](https://github.com/engeir/volcano-base/compare/v2.1.0...v2.2.0) (2024-08-19)
+
+
+### Features
+
+* **manipulate:** add conversions between pressure and metric coordinates ([2c670c0](https://github.com/engeir/volcano-base/commit/2c670c0281b7b3a6feb10f0e5c1fe5131483cfb2))
+
+
+### Build System
+
+* **rye:** specify the dependency resolver to be universal ([a01891b](https://github.com/engeir/volcano-base/commit/a01891b440fa7aeb9e1dc710af3d5607ff7d4782))
+
 ## [2.1.0](https://github.com/engeir/volcano-base/compare/v2.0.7...v2.1.0) (2024-07-23)
 
 
