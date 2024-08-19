@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.1](https://github.com/engeir/volcano-base/compare/v2.2.0...v2.2.1) (2024-08-19)
+
+
+### Bug Fixes
+
+* **stub:** update stubfiles and make new functions available ([ac868b2](https://github.com/engeir/volcano-base/commit/ac868b2b06c5de6ef9e3922bccab93eec6363209))
+
 ## [2.2.0](https://github.com/engeir/volcano-base/compare/v2.1.0...v2.2.0) (2024-08-19)
 
 
