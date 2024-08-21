@@ -1,5 +1,22 @@
 # Changelog
 
+## [2.3.0](https://github.com/engeir/volcano-base/compare/v2.2.1...v2.3.0) (2024-08-21)
+
+
+### Features
+
+* **mcg24:** add down and find functionality for McGraw et al. 2024 ([0f497d6](https://github.com/engeir/volcano-base/commit/0f497d61e1430fd0699ac45ca03b76fbcad66654))
+
+
+### Styles
+
+* **find:** correct misspellings ([c9340e4](https://github.com/engeir/volcano-base/commit/c9340e4801b2df1a52f8d019c2795a397313f142))
+
+
+### Code Refactoring
+
+* **find:** only chunk by time if it is a dimension ([ce01dfe](https://github.com/engeir/volcano-base/commit/ce01dfe23add37995368b718e9d866639302f67b))
+
 ## [2.2.1](https://github.com/engeir/volcano-base/compare/v2.2.0...v2.2.1) (2024-08-19)
 
 
