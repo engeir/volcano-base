@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.3.1](https://github.com/engeir/volcano-base/compare/v2.3.0...v2.3.1) (2024-08-21)
+
+
+### Bug Fixes
+
+* **load:** make mcg24 functions available ([1626705](https://github.com/engeir/volcano-base/commit/1626705ba1e868031a3dd821c0cf3ed01a34ef50))
+
 ## [2.3.0](https://github.com/engeir/volcano-base/compare/v2.2.1...v2.3.0) (2024-08-21)
 
 
