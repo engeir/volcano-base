@@ -20,7 +20,7 @@ class CESM2FileNotFound(FileNotFoundError):
     def __init__(self, *args: object) -> None:
         file = volcano_base.config.DATA_PATH
         msg = (
-            f'Cannot find the file "{args[0]}", which is a nescessary CESM2 file.'
+            f'Cannot find the file "{args[0]}", which is a necessary CESM2 file.'
             if args
             else "Cannot find the necessary CESM2 files."
         )
@@ -104,7 +104,7 @@ def default_regex() -> RegexLookup:
     regex = r"""# Match everything up to "ensemble-simulations"
         .*ensemble-simulations/
         # Match for compset (group 1)
-        # Create a group of as many charaters as you can find that are in a-z or A-Z
+        # Create a group of as many characters as you can find that are in a-z or A-Z
         # or _ or -, but stop (?, non-greedy) as soon as another character shows up
         ([a-z,A-Z,0-9,_,-]+?)
         # Look for forward slash and some number of characters, then a -
@@ -574,7 +574,7 @@ class FindFiles:
         self,
         *found_files: tuple[str, ...],
         ft: str | None = None,
-        check_existance: bool = True,
+        check_existence: bool = True,
     ) -> list[pathlib.Path]:
         """Re-create complete file paths based on tuples made from regex groups.
 
@@ -586,7 +586,7 @@ class FindFiles:
         ft : str | None
             File type that should be returned. Default is to use the file type of the
             regex object.
-        check_existance : bool
+        check_existence : bool
             Whether to check if the files exists or not
 
         Returns
@@ -605,11 +605,11 @@ class FindFiles:
         paths: list[pathlib.Path] = []
         for file_tup in found_files:
             path = self.regex.reverse_search(file_tup, ft)
-            if not path.exists() and check_existance:
+            if not path.exists() and check_existence:
                 raise FileNotFoundError(
                     "For some reason, re-creating the file from the regex groups did"
-                    " not work! Track this issue down immedeately! The incorrect file"
-                    f" path was {path}."
+                    " not work! Track this issue down immediately! The incorrect file"
+                    f" path was '{path}'."
                 )
             paths.append(path)
         return paths
