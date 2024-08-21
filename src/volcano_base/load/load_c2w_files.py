@@ -661,7 +661,10 @@ class FindFiles:
             file_set = {v: file[i] for i, v in enumerate(self.regex.groups.values())}
             file_set["file_id"] = str(file)
             xarr = xarr.assign_attrs(file_set)
-            xr_arrs.append(xarr.chunk({"time": 100}))
+            if "time" in xarr.dims:
+                xr_arrs.append(xarr.chunk({"time": 100}))
+            else:
+                xr_arrs.append(xarr)
         return xr_arrs
 
     @staticmethod
