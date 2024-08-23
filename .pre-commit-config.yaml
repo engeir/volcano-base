@@ -20,48 +20,48 @@ repos:
         entry: check-added-large-files
         language: system
       - id: ruff_format
-        name: ruff_format
+        name: Ruff format
         stages: [commit]
         language: system
-        entry: rye fmt
+        entry: uv run ruff format
         types: [python]
       - id: ruff_check
-        name: ruff_check
+        name: Ruff check
         stages: [commit]
         language: system
-        entry: rye lint
+        entry: uv run ruff check
         types: [python]
       - id: xdoctest
         name: xdoctest
         stages: [commit]
         language: system
-        entry: rye run xdoctest
+        entry: uv run xdoctest
         types: [python]
       - id: pydocstringformatter
         name: pydocstringformatter
         stages: [commit]
         language: system
-        entry: rye run pydocstringformatter src tests
+        entry: uv run pydocstringformatter
         types: [python]
       - id: mypy
         name: mypy
         stages: [commit]
         language: system
-        entry: rye run mypy
+        entry: uv run mypy
         types: [python]
         require_serial: true
       - id: pydoclint
         name: pydoclint
         stages: [commit]
         language: system
-        entry: rye run pydoclint # src tests
+        entry: uv run pydoclint # src tests
         types: [python]
         require_serial: true
       - id: stubgen
         name: Generate stubfiles
         stages: [commit]
         language: system
-        entry: stubgen src/volcano_base/ -o src/
+        entry: uv run stubgen src/volcano_base/ -o src/
         types: [python]
         pass_filenames: false
 

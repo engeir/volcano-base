@@ -20,14 +20,14 @@ dependencies = [
   "datetime>=5.4",
   "pydantic>=2.6.2",
   "beautifulsoup4>=4.12.3",
+  "importlib_metadata >=7.1.0,<8; python_version < '3.10'",
 ]
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
-[tool.rye]
-universal = true
+[tool.uv]
 managed = true
 dev-dependencies = [
   "pytest>=8.0.0",
@@ -37,11 +37,11 @@ dev-dependencies = [
   "pyupgrade>=3.15.0",
   "pre-commit>=3.6.1",
   "pre-commit-hooks>=4.5.0",
-  "mypy>=1.8.0",
   "types-requests>=2.31.0.20240125",
   "ruff>=0.3.7",
   "nc-time-axis>=1.4.1",
   "pyqt5>=5.15.10",
+  "mypy>=1.11.1",
 ]
 
 [tool.mypy]

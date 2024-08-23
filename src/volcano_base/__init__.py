@@ -1,6 +1,9 @@
 """Initializes the package volcano-long-run."""
 
-from importlib.metadata import version
+try:
+    from importlib.metadata import version
+except Exception:
+    from importlib_metadata import version  # type: ignore[no-redef]
 
 from volcano_base import config, down, load, manipulate
 from volcano_base.config import never_called
