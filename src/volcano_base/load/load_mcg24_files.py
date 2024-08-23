@@ -2,10 +2,10 @@
 
 import pathlib
 
-import volcano_base
+from volcano_base.load import FindFiles, RegexLookup
 
 
-def mcg24_archive_regex() -> volcano_base.load.RegexLookup:
+def mcg24_archive_regex() -> RegexLookup:
     """Return a regex object that looks for files using the NIRD archive directory hierarchy."""
     regex = r"""# Match everything up to 'mcg2024'
         .*mcg2024/fig3a_ModelE2.2_Toba_ensemble_Tsurf_maps/
@@ -34,9 +34,9 @@ def mcg24_archive_regex() -> volcano_base.load.RegexLookup:
         / "fig3a_ModelE2.2_Toba_ensemble_Tsurf_maps"
         / "<attr>_<reff>_<ensemble>_<eruption>_<time_period>_<map><ft>"
     )
-    return volcano_base.load.RegexLookup(".nc", group_names, reverse_search, regex)
+    return RegexLookup(".nc", group_names, reverse_search, regex)
 
 
-def find_mcg24_files() -> volcano_base.load.FindFiles:
+def find_mcg24_files() -> FindFiles:
     """Return an object that lists and loads all data from McGraw et al. (2024)."""
-    return volcano_base.load.FindFiles(mcg24_archive_regex())
+    return FindFiles(mcg24_archive_regex())
