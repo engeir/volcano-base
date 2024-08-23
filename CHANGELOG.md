@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.3.2](https://github.com/engeir/volcano-base/compare/v2.3.1...v2.3.2) (2024-08-23)
+
+
+### Bug Fixes
+
+* **load:** recursive import when using FindFiles and RegexLookup ([09443c1](https://github.com/engeir/volcano-base/commit/09443c12b88b25e83c74eed0e456700788c81740))
+* stubgen crashes for newer numpy versions ([f48a94f](https://github.com/engeir/volcano-base/commit/f48a94f0252089261680d0546092fc276ac18835))
+
+
+### Build System
+
+* move from rye to uv ([f2345b6](https://github.com/engeir/volcano-base/commit/f2345b6d7c855715ba3574ac9091a4c984826bdd))
+
 ## [2.3.1](https://github.com/engeir/volcano-base/compare/v2.3.0...v2.3.1) (2024-08-21)
 
 
