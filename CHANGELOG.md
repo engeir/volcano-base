@@ -1,5 +1,22 @@
 # Changelog
 
+## [2.3.3](https://github.com/engeir/volcano-base/compare/v2.3.2...v2.3.3) (2024-12-13)
+
+
+### Miscellaneous
+
+* **deps:** bump pypa/gh-action-pypi-publish from 1.9.0 to 1.10.0 ([#94](https://github.com/engeir/volcano-base/issues/94)) ([2aded07](https://github.com/engeir/volcano-base/commit/2aded07b0de3ddc77c7630a63e886dd3d85bd8c6))
+
+
+### Build System
+
+* **deps:** make nc-time-axis a dependency, not dev-dep ([7df5d27](https://github.com/engeir/volcano-base/commit/7df5d2761af29ea93c1069d9f6829308033760c9)), closes [#104](https://github.com/engeir/volcano-base/issues/104)
+
+
+### Documentation
+
+* **time_series:** better docstring in `subtract_climatology` ([8aa320b](https://github.com/engeir/volcano-base/commit/8aa320bf4c992fe9e1a2ea0be4aea6169db2b50a))
+
 ## [2.3.2](https://github.com/engeir/volcano-base/compare/v2.3.1...v2.3.2) (2024-08-23)
 
 
