@@ -359,12 +359,15 @@ def subtract_climatology(
 ) -> tuple[xr.DataArray, xr.DataArray, xr.DataArray]:
     """Subtract the climatological mean.
 
+    If ``arr`` and ``clim_arr`` are not aligned, they will be by using the ``xr.align``
+    function.
+
     Parameters
     ----------
     arr : xr.DataArray
         The data array to subtract the climatology from.
     clim_arr : xr.DataArray
-        The climatology data array to take the climatology from.
+        The array used to calculate the climatology.
     groupby : Literal["time.dayofyear", "time.month"]
         The groupby string to use when grouping the data. At the moment, only daily and
         monthly resolved data is supported.
@@ -372,11 +375,11 @@ def subtract_climatology(
     Returns
     -------
     xr.DataArray
-        The corrected data array with the climatology subtracted.
+        The ``arr`` array with the climatology subtracted.
     xr.DataArray
-        The raw data array with the climatology subtracted.
+        The ``clim_arr`` array with the climatology subtracted.
     xr.DataArray
-        The climatology data array, aligned with the two other arrays.
+        The ``clim_arr`` array, aligned with the ``arr`` array.
 
     Examples
     --------
