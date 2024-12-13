@@ -16,53 +16,52 @@ repos:
         additional_dependencies: [dprint]
       - id: check-added-large-files
         name: Check for added large files
-        stages: [commit]
+        stages: [pre-commit]
         entry: check-added-large-files
         language: system
       - id: ruff_format
         name: Ruff format
-        stages: [commit]
+        stages: [pre-commit]
         language: system
         entry: uv run ruff format
         types: [python]
       - id: ruff_check
         name: Ruff check
-        stages: [commit]
+        stages: [pre-commit]
         language: system
         entry: uv run ruff check
         types: [python]
       - id: xdoctest
         name: xdoctest
-        stages: [commit]
+        stages: [pre-commit]
         language: system
         entry: uv run xdoctest
         types: [python]
       - id: pydocstringformatter
         name: pydocstringformatter
-        stages: [commit]
+        stages: [pre-commit]
         language: system
         entry: uv run pydocstringformatter
         types: [python]
       - id: mypy
         name: mypy
-        stages: [commit]
+        stages: [pre-commit]
         language: system
         entry: uv run mypy
         types: [python]
         require_serial: true
       - id: pydoclint
         name: pydoclint
-        stages: [commit]
+        stages: [pre-commit]
         language: system
         entry: uv run pydoclint # src tests
         types: [python]
         require_serial: true
       - id: stubgen
         name: Generate stubfiles
-        stages: [commit]
+        stages: [pre-commit]
         language: system
         entry: uv run stubgen src/volcano_base/ -o src/
-        types: [python]
         pass_filenames: false
 
 # - id: pytest

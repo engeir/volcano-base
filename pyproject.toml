@@ -20,7 +20,8 @@ dependencies = [
   "pydantic>=2.6.2",
   "beautifulsoup4>=4.12.3",
   "importlib_metadata >=7.1.0,<8; python_version < '3.10'",
-  "numpy==1.26.4",
+  "numpy>=1.26.4",
+  "nc-time-axis>=1.4.1",
 ]
 
 [build-system]
@@ -39,7 +40,6 @@ dev-dependencies = [
   "pre-commit-hooks>=4.5.0",
   "types-requests>=2.31.0.20240125",
   "ruff>=0.3.7",
-  "nc-time-axis>=1.4.1",
   "pyqt5>=5.15.10",
   "mypy>=1.11.1",
 ]
