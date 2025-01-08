@@ -84,12 +84,16 @@ def _save_output_files_to_npz(
             volcano_base.never_called(freq)
     # Temperature.
     _download_ensemble("TREFHT", save_modifier, just_looking, file_tup)
+    # Surface temperature.
+    _download_ensemble("TS", save_modifier, just_looking, file_tup)
     # RF forcing
     _download_ensemble("FSNTOA", save_modifier, just_looking, file_tup)
     # Sea-ice fraction
     _download_ensemble("ICEFRAC", save_modifier, just_looking, file_tup)
     # Control run for temperature.
     _download_ctrl_run("TREFHT", save_modifier, just_looking, ctrl_file_tup)
+    # Control run for surface temperature.
+    _download_ctrl_run("TS", save_modifier, just_looking, ctrl_file_tup)
     # Control run for RF forcing.
     _download_ctrl_run("FSNTOA", save_modifier, just_looking, ctrl_file_tup)
     # Control run for sea-ice fraction
@@ -97,7 +101,7 @@ def _save_output_files_to_npz(
 
 
 def _download_ctrl_run(
-    variable: Literal["ICEFRAC", "FSNTOA", "TREFHT"],
+    variable: Literal["ICEFRAC", "FSNTOA", "TREFHT", "TS"],
     save_modifier,
     just_looking,
     file_tup,
@@ -130,7 +134,7 @@ def _download_ctrl_run(
 
 
 def _download_ensemble(
-    variable: Literal["ICEFRAC", "FSNTOA", "TREFHT"],
+    variable: Literal["ICEFRAC", "FSNTOA", "TREFHT", "TS"],
     save_modifier,
     just_looking,
     file_tup,
