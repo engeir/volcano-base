@@ -1,5 +1,22 @@
 # Changelog
 
+## [2.3.4](https://github.com/engeir/volcano-base/compare/v2.3.3...v2.3.4) (2025-01-08)
+
+
+### Miscellaneous
+
+* **deps:** bump pypa/gh-action-pypi-publish from 1.10.0 to 1.12.3 ([#106](https://github.com/engeir/volcano-base/issues/106)) ([c4eb94b](https://github.com/engeir/volcano-base/commit/c4eb94bd49d2eca76c47740032732c679f4688a8))
+
+
+### Styles
+
+* **yaml:** format workflow files ([e5639c3](https://github.com/engeir/volcano-base/commit/e5639c3b10aef53e2af8db56b4f9f7a8517d76f1))
+
+
+### Continuous Integration
+
+* **release-please:** add `uv.toml` to extra-files ([9942796](https://github.com/engeir/volcano-base/commit/99427962e8b938c49d79c3bf5cecbb9b301da95d))
+
 ## [2.3.3](https://github.com/engeir/volcano-base/compare/v2.3.2...v2.3.3) (2024-12-13)
 
 
