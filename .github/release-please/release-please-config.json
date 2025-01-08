@@ -17,7 +17,7 @@
   "packages": {
     ".": {
       "release-type": "python",
-      "extra-files": ["README.md"],
+      "extra-files": ["README.md", "uv.toml"],
       "package-name": "volcano-base",
       "changelog-path": "CHANGELOG.md"
     }
