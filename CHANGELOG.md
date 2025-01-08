@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.4.0](https://github.com/engeir/volcano-base/compare/v2.3.4...v2.4.0) (2025-01-08)
+
+
+### Features
+
+* **load:** include TS (surface temperature) as an OB16 data field ([#107](https://github.com/engeir/volcano-base/issues/107)) ([52952c2](https://github.com/engeir/volcano-base/commit/52952c258b4bf2f7934b51796335a4539593d59c))
+
 ## [2.3.4](https://github.com/engeir/volcano-base/compare/v2.3.3...v2.3.4) (2025-01-08)
 
 
