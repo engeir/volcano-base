@@ -232,7 +232,7 @@ def mean_flatten(
 @overload
 def remove_seasonality(
     arrays: list[xr.DataArray],
-    freq: float = 1.0,
+    freqs: float | list[float] = 1.0,
     radius: float = 0.01,
     plot: bool = False,
 ) -> list[xr.DataArray]: ...
@@ -241,7 +241,7 @@ def remove_seasonality(
 @overload
 def remove_seasonality(
     arrays: xr.DataArray,
-    freq: float = 1.0,
+    freqs: float | list[float] = 1.0,
     radius: float = 0.01,
     plot: bool = False,
 ) -> xr.DataArray: ...
@@ -249,7 +249,7 @@ def remove_seasonality(
 
 def remove_seasonality(
     arrays: list[xr.DataArray] | xr.DataArray,
-    freq: float = 1.0,
+    freqs: float | list[float] = 1.0,
     radius: float = 0.01,
     plot: bool = False,
 ) -> list[xr.DataArray] | xr.DataArray:
@@ -259,8 +259,8 @@ def remove_seasonality(
     ----------
     arrays : list[xr.DataArray] | xr.DataArray
         An array or a list of arrays to remove seasonality from
-    freq : float
-        Gives the frequency that should be removed when using the Fourier method
+    freqs : float | list[float]
+        Gives the frequencies that should be removed when using the Fourier method
     radius : float
         Gives the frequency range that should be removed when using the Fourier method
     plot : bool
@@ -272,16 +272,16 @@ def remove_seasonality(
         An object of the same arrays as the input, but modified
     """
     if isinstance(arrays, xr.DataArray):
-        return _remove_seasonality_fourier(arrays.copy(), freq, radius, plot)
+        return _remove_seasonality_fourier(arrays.copy(), freqs, radius, plot)
     array = arrays[:]
     for i, arr in enumerate(array):
         # Need to re-assign `arr`, otherwise it will be re-used
-        array[i] = _remove_seasonality_fourier(arr, freq, radius, plot)
+        array[i] = _remove_seasonality_fourier(arr, freqs, radius, plot)
     return array[:]
 
 
 def _remove_seasonality_fourier(
-    arr: xr.DataArray, freq: float, radius: float, plot: bool
+    arr: xr.DataArray, freqs: float | list[float], radius: float, plot: bool
 ) -> xr.DataArray:
     """Remove seasonality via Fourier transform.
 
@@ -289,7 +289,7 @@ def _remove_seasonality_fourier(
     ----------
     arr : xr.DataArray
         An xarray DataArray.
-    freq : float
+    freqs : float | list[float]
         Give a custom frequency that should be removed. Default is 1.
     radius : float
         Give a custom radius that should be removed. Default is 0.01.
@@ -324,29 +324,31 @@ def _remove_seasonality_fourier(
     n = len(arr.time.data)
     yf = scipy.fft.rfft(arr.data)
     xf = scipy.fft.rfftfreq(n, sample_spacing)
-    idx = np.argwhere((xf > freq - radius) & (xf < freq + radius))
     yf_clean = yf.copy()
-    if any(idx):
-        linear_fill = np.linspace(
-            yf_clean[idx[0] - 1], yf_clean[idx[-1] + 1], len(yf_clean[idx])
-        )
-        yf_clean[idx] = linear_fill
-    else:
-        print(
-            "Warning: No frequencies were removed! The radius is probably too small,"
-            " try with a larger one."
-        )
-        print(
-            "HINT: You can also view the before/after of this function by passing in"
-            " the `plot=True` keyword argument."
-        )
+    if isinstance(freqs, float):
+        freqs = [freqs]
+    for freq in freqs:
+        idx = np.argwhere((xf > freq - radius) & (xf < freq + radius))
+        if any(idx):
+            linear_fill = np.linspace(
+                yf_clean[idx[0] - 1], yf_clean[idx[-1] + 1], len(yf_clean[idx])
+            )
+            yf_clean[idx] = linear_fill
+        else:
+            print(
+                "Warning: No frequencies were removed! The radius is probably too small,"
+                " try with a larger one."
+            )
+            print(
+                "HINT: You can also view the before/after of this function by passing in"
+                " the `plot=True` keyword argument."
+            )
     new_f_clean = scipy.fft.irfft(yf_clean)
     if plot:
         plt.figure()
         plt.semilogy(xf, np.abs(yf))
         plt.semilogy(xf, np.abs(yf_clean))
         plt.xlim([-1, 10])
-        plt.show()
     arr.data[: len(new_f_clean)] = new_f_clean
 
     return arr[:]
