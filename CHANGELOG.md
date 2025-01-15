@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.5.0](https://github.com/engeir/volcano-base/compare/v2.4.0...v2.5.0) (2025-01-15)
+
+
+### Features
+
+* **manipulate:** allow removing several frequencies at once ([8c5e978](https://github.com/engeir/volcano-base/commit/8c5e97850f36c395565d66fd427997998b0460e0))
+
 ## [2.4.0](https://github.com/engeir/volcano-base/compare/v2.3.4...v2.4.0) (2025-01-08)
 
 
