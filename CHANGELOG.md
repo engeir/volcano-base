@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.5.1](https://github.com/engeir/volcano-base/compare/v2.5.0...v2.5.1) (2025-02-27)
+
+
+### Miscellaneous
+
+* **deps:** bump pypa/gh-action-pypi-publish from 1.12.3 to 1.12.4 ([#111](https://github.com/engeir/volcano-base/issues/111)) ([31077ac](https://github.com/engeir/volcano-base/commit/31077ac4cec726dfcbc89ce3faa7dc0e93633475))
+
+
+### Build System
+
+* **mise:** track mise local as development instead ([b4c063c](https://github.com/engeir/volcano-base/commit/b4c063cc451a5583f57f0254554ddd0754892e60))
+
 ## [2.5.0](https://github.com/engeir/volcano-base/compare/v2.4.0...v2.5.0) (2025-01-15)
 
 
